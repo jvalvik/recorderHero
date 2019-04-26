@@ -6,8 +6,7 @@ public class barLine {
   float startY = 250;
   float endX = 900;
   float endY = 750;
-  float moveSpeed = 5;
-  float directionX = -2; // Controls speed of the bars. 
+  float directionX = -1; // Controls speed of the bars. 
   
 
 
@@ -25,7 +24,6 @@ public class barLine {
     strokeWeight(3);
     stroke(75);
     line(startX, startY, endX, endY);
-    //startX += speed * directionX;
     } else {
       stroke(255);
     }
@@ -33,8 +31,8 @@ public class barLine {
   
   void move(float tspeed) {
   moveSpeed = tspeed;
-  startX += speed * directionX;
-  endX += speed * directionX;
+  startX += moveSpeed * directionX;
+  endX += moveSpeed * directionX;
 }
 
   void resetBar() {

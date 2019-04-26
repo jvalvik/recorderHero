@@ -1,2 +1,0 @@
-# recorderHero
-for MED4
