@@ -1,3 +1,8 @@
+import processing.sound.*;
+SinOsc sine;
+float amp = 0.5;
+int freq;
+
 PImage img;
 Note c;
 int speed = 1;
@@ -60,6 +65,7 @@ void setup() {
   size(1057, 816);
   background(255);
   img = loadImage("recorder3_0.jpg");
+  sine = new SinOsc(this);
   c = new Note(width/2, height/2+8, 255, 0, 0); 
   line1 = new barLine((1014/5)*5, 250, (1014/5)*5, 750);
   line2 = new barLine((1014/5)*5, 250, (1014/5)*5, 750);
@@ -239,6 +245,7 @@ void noteTrigger() {
 }
 
 void C() {
+  freq = 523;
   notes.add(new Note(1053, 357, 0, 255, 0));
   notes.add(new Note(1053, 416, 0, 255, 0));
   notes.add(new Note(1053, 472, 0, 255, 0));
@@ -250,6 +257,7 @@ void C() {
 }
 
 void D() {
+  freq = 587;
   notes.add(new Note(1053, 357, 255, 0, 0));
   notes.add(new Note(1053, 416, 255, 0, 0));
   notes.add(new Note(1053, 472, 255, 0, 0));
@@ -260,6 +268,7 @@ void D() {
 }
 
 void E() {
+  freq = 659;
   notes.add(new Note(1053, 357, 255, 255, 0));
   notes.add(new Note(1053, 416, 255, 255, 0));
   notes.add(new Note(1053, 472, 255, 255, 0));
@@ -269,6 +278,7 @@ void E() {
 }
 
 void F() {
+  freq = 698;
   notes.add(new Note(1053, 357, 0, 0, 255));
   notes.add(new Note(1053, 416, 0, 0, 255));
   notes.add(new Note(1053, 472, 0, 0, 255));
@@ -279,6 +289,7 @@ void F() {
 }
 
 void G() {
+  freq = 783;
   notes.add(new Note(1053, 357, 255, 125, 0));
   notes.add(new Note(1053, 416, 255, 125, 0));
   notes.add(new Note(1053, 472, 255, 125, 0));
@@ -286,12 +297,14 @@ void G() {
 }
 
 void A() {
+  freq = 880;
   notes.add(new Note(1053, 357, 0, 255, 255));
   notes.add(new Note(1053, 416, 0, 255, 255));
   println("A NOTE ADDED TO ARRAY");
 }
 
 void B() {
+  freq = 987;
   notes.add(new Note(1053, 357, 255, 0, 125));
   println("B NOTE ADDED TO ARRAY");
 }
