@@ -17,9 +17,16 @@ int elapsedTimeNotes;
 int lastTimeNotes;
 int melodyArrIndex = 0;
 
-float moveSpeed = 3;
+// Variables for making sound.
+int elapsedTimeSound;
+int lastTimeSound;
+int soundArrIndex = 0;
+
+
+float moveSpeed = 5;
 
 float songSpeed = 2; // Variable that should help scale the speed of bars and notes. 1 = 100% speed, 0.5 = 200%, 2 = 50% speed.
+float soundSpeed = (songSpeed/2)*0.98;
 
 boolean bar1 = false;
 boolean bar2 = false;
@@ -76,6 +83,20 @@ String[] melody = {
   "A", "A", "G", "PAUSE", 
   "F", "F", "E", "E", 
   "D", "D", "C", "PAUSE", };
+  
+  int[] sound = {
+  523, 0, 523, 0, 783, 0, 783, 0, 
+  880, 0, 880, 0, 783, 783, 0, 0, 
+  698, 0, 698, 0, 659, 0, 659, 0, 
+  587, 0, 587, 0, 523, 523, 0, 0, 
+  783, 0, 783, 0, 698, 0, 698, 0, 
+  659, 0, 659, 0, 587, 587, 0, 0, 
+  783, 0, 783, 0, 698, 0, 698, 0, 
+  783, 0, 783, 0, 587, 587, 0, 0, 
+  523, 0, 523, 0, 783, 0, 783, 0, 
+  880, 0, 880, 0, 783, 783, 0, 0, 
+  698, 0, 698, 0, 659, 0, 659, 0, 
+  587, 0, 587, 0, 523, 523, 0, 0 };
 
 
 final static ArrayList<Note> notes = new ArrayList();
@@ -132,6 +153,7 @@ void draw() {
 
   //Functions for spawning notes.
   noteTrigger();
+  soundTrigger();
   for (Note n : notes) {
     n.script();
     noteCheck();
@@ -274,6 +296,51 @@ void noteTrigger() {
       case "PAUSE":
         println("Spawning " + melody[melodyArrIndex] + ". Nothing on this quater note. From array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
         melodyArrIndex++;
+        break;
+      }
+    }
+  }
+}
+
+void soundTrigger() {
+  if (millis() >= 5800 && soundArrIndex < sound.length) {
+
+    elapsedTimeSound = millis() - lastTimeSound;
+    // 
+    if (elapsedTimeSound >= 600 * soundSpeed) {
+      lastTimeSound = millis();
+      switch(sound[soundArrIndex]) {
+      case 523:
+        sine.play(523, amp);
+        soundArrIndex++;
+        break;
+      case 587:
+        sine.play(587, amp);
+        soundArrIndex++;
+        break;
+      case 659:
+        sine.play(659, amp);
+        soundArrIndex++;
+        break;
+      case 698:
+        sine.play(698, amp);
+        soundArrIndex++;
+        break;
+      case 783:
+        sine.play(783, amp);
+        soundArrIndex++;
+        break;
+      case 880:
+        sine.play(880, amp);
+        soundArrIndex++;
+        break;
+      case 987:
+        sine.play(987, amp);
+        soundArrIndex++;
+        break;
+      case 0:
+        sine.stop();
+        soundArrIndex++;
         break;
       }
     }
