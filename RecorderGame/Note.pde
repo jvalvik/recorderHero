@@ -42,45 +42,30 @@ class Note
     if (_x > 32 && _x < 54 && _y == 695) {
       h7 = true;
       //println("HOLE 7 IS COVERED");
-    } else {
-      h7 = false;
-    }
+    } 
     if (_x > 32 && _x < 54 && _y == 629) {
       h6 = true;
       //println("HOLE 6 IS COVERED");
-    } else {
-      h6 = false;
-    }
+    } 
     if (_x > 32 && _x < 54 && _y == 580) {
       h5 = true;
       //println("HOLE 5 IS COVERED");
-    } else {
-      h5 = false;
-    }
+    } 
     if (_x > 32 && _x < 54 && _y == 526) {
       h4 = true;
       //println("HOLE 4 IS COVERED");
-    } else {
-      h4 = false;
-    }
+    } 
     if (_x > 32 && _x < 54 && _y == 472) {
       h3 = true;
       //println("HOLE 3 IS COVERED");
-    } else {
-      h3 = false;
-    }
+    } 
     if (_x > 32 && _x < 54 && _y == 416) {
       h2 = true;
       //println("HOLE 2 IS COVERED");
-    } else {
-      h2 = false;
     }
     if (_x > 32 && _x < 54 && _y == 357) {
       h1 = true;
-    }
-    //println("HOLE 1 IS COVERED");
-    else {
-      h1 = false;
+      //println("HOLE 1 IS COVERED");
     }
 
     //h1 = false;

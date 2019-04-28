@@ -3,6 +3,13 @@ SinOsc sine;
 float amp = 0.5;
 int freq;
 
+Button startbutton;
+Button stopbutton;
+boolean stop = false;
+boolean start = true;
+
+int resetter = 0;
+
 PImage img;
 Note c;
 int speed = 1;
@@ -25,7 +32,7 @@ int soundArrIndex = 0;
 
 float moveSpeed = 5;
 
-float songSpeed = 2; // Variable that should help scale the speed of bars and notes. 1 = 100% speed, 0.5 = 200%, 2 = 50% speed.
+float songSpeed = 1; // Variable that should help scale the speed of bars and notes. 1 = 100% speed, 0.5 = 200%, 2 = 50% speed.
 float soundSpeed = (songSpeed/2)*0.98;
 
 boolean bar1 = false;
@@ -83,8 +90,8 @@ String[] melody = {
   "A", "A", "G", "PAUSE", 
   "F", "F", "E", "E", 
   "D", "D", "C", "PAUSE", };
-  
-  int[] sound = {
+
+int[] sound = {
   523, 0, 523, 0, 783, 0, 783, 0, 
   880, 0, 880, 0, 783, 783, 0, 0, 
   698, 0, 698, 0, 659, 0, 659, 0, 
@@ -113,8 +120,7 @@ void setup() {
   size(1057, 816);
   background(255);
   img = loadImage("recorder3_0.jpg");
-  sine = new SinOsc(this);
-  c = new Note(width/2, height/2+8, 255, 0, 0); 
+  sine = new SinOsc(this); 
   line1 = new barLine((1014/5)*5, 250, (1014/5)*5, 750);
   line2 = new barLine((1014/5)*5, 250, (1014/5)*5, 750);
   line3 = new barLine((1014/5)*5, 250, (1014/5)*5, 750);
@@ -122,6 +128,9 @@ void setup() {
   line5 = new barLine((1014/5)*5, 250, (1014/5)*5, 750);
   line6 = new barLine((1014/5)*5, 250, (1014/5)*5, 750);
   line7 = new barLine((1014/5)*5, 250, (1014/5)*5, 750);
+
+  stopbutton = new Button(460, 100, 100, 100, "Stop", 255, 255, 255);
+  startbutton = new Button(660, 100, 100, 100, "Start", 255, 255, 255);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -129,16 +138,35 @@ void setup() {
 void draw() {
   background(img); 
   fill(155);
-  //background(200);
 
+  if (startbutton.isClicked()) {
+    start = true;
+    stop = false;
+  } else if (stopbutton.isClicked()) {
+    start = false;
+    stop = true;
+  }
+
+  startbutton.update();
+  startbutton.render();
+  stopbutton.update();
+  stopbutton.render();
+  
   // These circles are made to help with collision detection of notes.
-  hole1 = createShape(ELLIPSE,43, 357, 22, 22);
-  hole2 = createShape(ELLIPSE,43, 416, 22, 22);
-  hole3 = createShape(ELLIPSE,43, 472, 22, 22);
-  hole4 = createShape(ELLIPSE,43, 526, 22, 22);
-  hole5 = createShape(ELLIPSE,43, 580, 22, 22);
-  hole6 = createShape(ELLIPSE,43, 629, 22, 22);
-  hole7 = createShape(ELLIPSE,43, 695, 22, 22);
+  hole1 = createShape(ELLIPSE, 43, 357, 22, 22);
+  hole1.setFill(color(100));
+  hole2 = createShape(ELLIPSE, 43, 416, 22, 22);
+  hole2.setFill(color(100));
+  hole3 = createShape(ELLIPSE, 43, 472, 22, 22);
+  hole3.setFill(color(100));
+  hole4 = createShape(ELLIPSE, 43, 526, 22, 22);
+  hole4.setFill(color(100));
+  hole5 = createShape(ELLIPSE, 43, 580, 22, 22);
+  hole5.setFill(color(100));
+  hole6 = createShape(ELLIPSE, 43, 629, 22, 22);
+  hole6.setFill(color(100));
+  hole7 = createShape(ELLIPSE, 43, 695, 22, 22);
+  hole7.setFill(color(100));
   shape(hole1);      // Draws the holes
   shape(hole2);
   shape(hole3);
@@ -152,13 +180,21 @@ void draw() {
   //barTrigger();
 
   //Functions for spawning notes.
-  noteTrigger();
-  soundTrigger();
-  for (Note n : notes) {
-    n.script();
-    noteCheck();
-  }
+  println(lastTimeNotes);
   
+  //if (start == true) {
+    noteTrigger();
+    soundTrigger();
+    for (Note n : notes) {
+      n.script();
+      noteCheck();
+    }
+  /*} else if (stop == true) {
+    lastTimeNotes = lastTimeNotes-lastTimeNotes;
+    lastTimeSound = lastTimeSound-lastTimeSound;
+    melodyArrIndex = 0;
+    soundArrIndex = 0;
+  }*/
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -169,6 +205,7 @@ void draw() {
 // Twinkle Twinkle is at 100 BPM. One bar consists of 4 beats. 1 beat = 60.000/BPM (600ms in our case)
 // The switch goes increments every bar and controls which bar is being spawned. Goes 1-5, 1-5, 1-5 forever.
 
+/*
 void barTrigger() {
   elapsedTime = millis() - lastTime;
   // 
@@ -246,7 +283,7 @@ void showBarLines() {
     line7.move(moveSpeed);
   }
 }
-
+*/
 
 // Triggers a note after 2.4 sec, every beat (600 ms). 
 void noteTrigger() {
@@ -259,42 +296,42 @@ void noteTrigger() {
       lastTimeNotes = millis();
       switch(melody[melodyArrIndex]) {
       case "C":
-        println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex + "--------TIME: " +elapsedTimeNotes);
+        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex + "--------TIME: " +elapsedTimeNotes);
         C();
         melodyArrIndex++;
         break;
       case "D":
-        println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
+        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
         D();
         melodyArrIndex++;
         break;
       case "E":
-        println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
+        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
         E();
         melodyArrIndex++;
         break;
       case "F":
-        println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);  
+        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);  
         F();
         melodyArrIndex++;
         break;
       case "G":
-        println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
+        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
         G();
         melodyArrIndex++;
         break;
       case "A":
-        println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
+        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
         B();
         melodyArrIndex++;
         break;
       case "B":
-        println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
+        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
         A();
         melodyArrIndex++;
         break;
       case "PAUSE":
-        println("Spawning " + melody[melodyArrIndex] + ". Nothing on this quater note. From array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
+        //println("Spawning " + melody[melodyArrIndex] + ". Nothing on this quater note. From array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
         melodyArrIndex++;
         break;
       }
@@ -348,7 +385,6 @@ void soundTrigger() {
 }
 
 void C() {
-  freq = 523;
   notes.add(new Note(1053, 357, 0, 255, 0));
   notes.add(new Note(1053, 416, 0, 255, 0));
   notes.add(new Note(1053, 472, 0, 255, 0));
@@ -356,99 +392,129 @@ void C() {
   notes.add(new Note(1053, 580, 0, 255, 0));
   notes.add(new Note(1053, 629, 0, 255, 0));
   notes.add(new Note(1053, 695, 0, 255, 0));
-  println("C NOTE ADDED TO ARRAY");
+  //println("C NOTE ADDED TO ARRAY");
 }
 
 void D() {
-  freq = 587;
   notes.add(new Note(1053, 357, 255, 0, 0));
   notes.add(new Note(1053, 416, 255, 0, 0));
   notes.add(new Note(1053, 472, 255, 0, 0));
   notes.add(new Note(1053, 526, 255, 0, 0));
   notes.add(new Note(1053, 580, 255, 0, 0));
   notes.add(new Note(1053, 629, 255, 0, 0));
-  println("D NOTE ADDED TO ARRAY");
+  //println("D NOTE ADDED TO ARRAY");
 }
 
 void E() {
-  freq = 659;
   notes.add(new Note(1053, 357, 255, 255, 0));
   notes.add(new Note(1053, 416, 255, 255, 0));
   notes.add(new Note(1053, 472, 255, 255, 0));
   notes.add(new Note(1053, 526, 255, 255, 0));
   notes.add(new Note(1053, 580, 255, 255, 0));
-  println("E NOTE ADDED TO ARRAY");
+  //println("E NOTE ADDED TO ARRAY");
 }
 
 void F() {
-  freq = 698;
   notes.add(new Note(1053, 357, 0, 0, 255));
   notes.add(new Note(1053, 416, 0, 0, 255));
   notes.add(new Note(1053, 472, 0, 0, 255));
   notes.add(new Note(1053, 526, 0, 0, 255));
   notes.add(new Note(1053, 629, 0, 0, 255));
   notes.add(new Note(1053, 695, 0, 0, 255));
-  println("F NOTE ADDED TO ARRAY");
+  //println("F NOTE ADDED TO ARRAY");
 }
 
 void G() {
-  freq = 783;
   notes.add(new Note(1053, 357, 255, 125, 0));
   notes.add(new Note(1053, 416, 255, 125, 0));
   notes.add(new Note(1053, 472, 255, 125, 0));
-  println("F NOTE ADDED TO ARRAY");
+  //println("F NOTE ADDED TO ARRAY");
 }
 
 void A() {
-  freq = 880;
   notes.add(new Note(1053, 357, 0, 255, 255));
   notes.add(new Note(1053, 416, 0, 255, 255));
-  println("A NOTE ADDED TO ARRAY");
+  //println("A NOTE ADDED TO ARRAY");
 }
 
 void B() {
-  freq = 987;
   notes.add(new Note(1053, 357, 255, 0, 125));
-  println("B NOTE ADDED TO ARRAY");
+  //println("B NOTE ADDED TO ARRAY");
 }
 
 void noteCheck() {
+
   if (h1 && h2 && h3 && h4 && h5 && h6 && h7) {
     C = true;
     println("C NOTE COVERED!");
-   // break;
-  }
-  if (h1 && h2 && h3 && h4 && h5 && h6 && !h7) {
+    h1 = false;
+    h2 = false;
+    h3 = false;
+    h4 = false;
+    h5 = false;
+    h6 = false;
+    h7 = false;
+  } else if (h1 && h2 && h3 && h4 && h5 && h6 && !h7) {
     D = true;
     println("D NOTE COVERED!");
-   // break;
-  }
-  if (h1 && h2 && h3 && h4 && h5 && !h6 && !h7) {
+    h1 = false;
+    h2 = false;
+    h3 = false;
+    h4 = false;
+    h5 = false;
+    h6 = false;
+    h7 = false;
+  } else if (h1 && h2 && h3 && h4 && h5 && !h6 && !h7) {
     E = true;
     println("E NOTE COVERED!");
-   // break;
-  }
-  if (h1 && h2 && h3 && h4 && !h5 && h6 && h7) {
+    h1 = false;
+    h2 = false;
+    h3 = false;
+    h4 = false;
+    h5 = false;
+    h6 = false;
+    h7 = false;
+  } else if (h1 && h2 && h3 && h4 && !h5 && h6 && h7) {
     F = true;
     println("F NOTE COVERED!");
-   // break;
-  }
-  if (h1 && h2 && h3 && !h4 && !h5 && !h6 && !h7) {
+    h1 = false;
+    h2 = false;
+    h3 = false;
+    h4 = false;
+    h5 = false;
+    h6 = false;
+    h7 = false;
+  } else if (h1 && h2 && h3 && !h4 && !h5 && !h6 && !h7) {
     G = true;
     println("G NOTE COVERED!");
-    //break;
-  }
-  if (h1 && h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
+    h1 = false;
+    h2 = false;
+    h3 = false;
+    h4 = false;
+    h5 = false;
+    h6 = false;
+    h7 = false;
+  } else if (h1 && h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
     A = true;
     println("A NOTE COVERED!");
-    //break;
-  }
-  if (h1 && !h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
+    h1 = false;
+    h2 = false;
+    h3 = false;
+    h4 = false;
+    h5 = false;
+    h6 = false;
+    h7 = false;
+  } else if (h1 && !h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
     B = true;
     println("B NOTE COVERED!");
-    //break;
-  }
-  else {
+    h1 = false;
+    h2 = false;
+    h3 = false;
+    h4 = false;
+    h5 = false;
+    h6 = false;
+    h7 = false;
+  } else {
     C = false;
     D = false;
     E = false;
@@ -456,6 +522,5 @@ void noteCheck() {
     G = false;
     A = false;
     B = false;
-    
   }
 }
