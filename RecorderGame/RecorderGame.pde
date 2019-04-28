@@ -1,27 +1,22 @@
-import processing.serial.*;
 import processing.sound.*;
 SinOsc sine;
 float amp = 0.5;
 int freq;
 
-Button startbutton;
-Button stopbutton;
-Button pointShow;
-boolean stop = false;
-boolean start = true;
 
-int resetter = 0;
+Button stopbutton;
+Button startbutton;
+
+boolean start = true;
+boolean stop = false;
+
+int interval = 80;
+int lastRecordedTime = 0;
 
 PImage img;
 Note c;
 int speed = 1;
 int bpm;
-
-// Variables for receiving data via Bluetooth
-Serial myPort;  // Create object from Serial class
-char receivedNote;      // Data received from the serial port
-
-int points = 0;
 
 // Variables for spawning bars.
 int elapsedTime;
@@ -30,17 +25,17 @@ int lastTime;
 // Variables for spawning notes.
 int elapsedTimeNotes;
 int lastTimeNotes;
-int melodyArrIndex = 0;
+int melodyArrIndex;
 
 // Variables for making sound.
 int elapsedTimeSound;
 int lastTimeSound;
-int soundArrIndex = 0;
+int soundArrIndex;
 
 
 float moveSpeed = 5;
 
-float songSpeed = 2; // Variable that should help scale the speed of bars and notes. 1 = 100% speed, 0.5 = 200%, 2 = 50% speed.
+float songSpeed = 1; // Variable that should help scale the speed of bars and notes. 1 = 100% speed, 0.5 = 200%, 2 = 50% speed.
 float soundSpeed = (songSpeed/2)*0.98;
 
 boolean bar1 = false;
@@ -125,7 +120,6 @@ final static ArrayList<barLine> bars = new ArrayList();
 
 void setup() {
   frameRate(60);  
-  printArray(Serial.list()); // Prints available COMs
   size(1057, 816);
   background(255);
   img = loadImage("recorder3_0.jpg");
@@ -138,11 +132,16 @@ void setup() {
   line6 = new barLine((1014/5)*5, 250, (1014/5)*5, 750);
   line7 = new barLine((1014/5)*5, 250, (1014/5)*5, 750);
 
+  elapsedTimeNotes = 0;
+  lastTimeNotes = millis();
+  melodyArrIndex = 0;
+  elapsedTimeSound = 0;
+  lastTimeSound = millis();
+  soundArrIndex = 0;
+
+
   stopbutton = new Button(460, 100, 100, 100, "Stop", 255, 255, 255);
-  startbutton = new Button(660, 100, 100, 100, "Start", 255, 255, 255);
-  
-  String portName = Serial.list()[2]; // assigns bluetooth COM to portName
-  myPort = new Serial(this, portName, 115200);
+  startbutton = new Button(760, 100, 100, 100, "Start", 255, 255, 255);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -150,24 +149,23 @@ void setup() {
 void draw() {
   background(img); 
   fill(155);
-  
-  pointShow = new Button(800, 100, 100, 100, str(points), 255, 255, 255);
 
-  if (startbutton.isClicked()) {
-    start = true;
-    stop = false;
-  } else if (stopbutton.isClicked()) {
-    start = false;
+  if (stopbutton.isClicked()) {
     stop = true;
+    start = false;
+    elapsedTimeNotes = 0;
+    lastTimeNotes = millis();
+    melodyArrIndex = 0;
+    elapsedTimeSound = 0;
+    lastTimeSound = millis();
+    soundArrIndex = 0;
   }
 
   startbutton.update();
   startbutton.render();
   stopbutton.update();
   stopbutton.render();
-  pointShow.update();
-  pointShow.render();
-  
+
   // These circles are made to help with collision detection of notes.
   hole1 = createShape(ELLIPSE, 43, 357, 22, 22);
   hole1.setFill(color(100));
@@ -196,21 +194,21 @@ void draw() {
   //barTrigger();
 
   //Functions for spawning notes.
-  //println(lastTimeNotes);
-  
-  //if (start == true) {
+  println(lastRecordedTime);
+
+  if (startbutton.isClicked()) {
+    start = true;
+    stop = false;
+  }
+
+  if (start == true) {
     noteTrigger();
-    soundTrigger();
+    //soundTrigger();
     for (Note n : notes) {
       n.script();
       noteCheck();
     }
-  /*} else if (stop == true) {
-    lastTimeNotes = lastTimeNotes-lastTimeNotes;
-    lastTimeSound = lastTimeSound-lastTimeSound;
-    melodyArrIndex = 0;
-    soundArrIndex = 0;
-  }*/
+  }
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -223,83 +221,83 @@ void draw() {
 
 /*
 void barTrigger() {
-  elapsedTime = millis() - lastTime;
-  // 
-  if (elapsedTime >= 2400 * songSpeed) {
-    println("Spawning bar " + switchNum + "BAR TIMING: " + elapsedTime);
-    lastTime = millis();
-    switch(switchNum) {
-    case 1:
-      line1.resetBar();
-      bar1 = true;
-      switchNum++;
-      break;
-    case 2:
-      line2.resetBar();
-      bar2 = true;
-      switchNum++;
-      break;
-    case 3:
-      line3.resetBar();
-      bar3 = true;
-      switchNum++;
-      break;
-    case 4:
-      line4.resetBar();
-      bar4 = true;
-      switchNum++;
-      break;
-    case 5:
-      line5.resetBar();
-      bar5 = true;
-      switchNum++;
-      break;
-    case 6:
-      line6.resetBar();
-      bar6 = true;
-      switchNum++;
-      break;
-    case 7:
-      line7.resetBar();
-      bar7 = true;
-      switchNum = 1;
-      break;
-    }
-  }
-}
-
-// Function that displays bar objects (vertical line shapes) from the barLine class. Is dependant on the booleans controlled in barTrigger().
-void showBarLines() {
-  if (bar1) {
-    line1.display();
-    line1.move(moveSpeed);
-  }
-  if (bar2) {
-    line2.display();
-    line2.move(moveSpeed);
-  }
-  if (bar3) {
-    line3.display();
-    line3.move(moveSpeed);
-  }
-  if (bar4) {
-    line4.display();
-    line4.move(moveSpeed);
-  }
-  if (bar5) {
-    line5.display();
-    line5.move(moveSpeed);
-  }
-  if (bar6) {
-    line6.display();
-    line6.move(moveSpeed);
-  }
-  if (bar7) {
-    line7.display();
-    line7.move(moveSpeed);
-  }
-}
-*/
+ elapsedTime = millis() - lastTime;
+ // 
+ if (elapsedTime >= 2400 * songSpeed) {
+ println("Spawning bar " + switchNum + "BAR TIMING: " + elapsedTime);
+ lastTime = millis();
+ switch(switchNum) {
+ case 1:
+ line1.resetBar();
+ bar1 = true;
+ switchNum++;
+ break;
+ case 2:
+ line2.resetBar();
+ bar2 = true;
+ switchNum++;
+ break;
+ case 3:
+ line3.resetBar();
+ bar3 = true;
+ switchNum++;
+ break;
+ case 4:
+ line4.resetBar();
+ bar4 = true;
+ switchNum++;
+ break;
+ case 5:
+ line5.resetBar();
+ bar5 = true;
+ switchNum++;
+ break;
+ case 6:
+ line6.resetBar();
+ bar6 = true;
+ switchNum++;
+ break;
+ case 7:
+ line7.resetBar();
+ bar7 = true;
+ switchNum = 1;
+ break;
+ }
+ }
+ }
+ 
+ // Function that displays bar objects (vertical line shapes) from the barLine class. Is dependant on the booleans controlled in barTrigger().
+ void showBarLines() {
+ if (bar1) {
+ line1.display();
+ line1.move(moveSpeed);
+ }
+ if (bar2) {
+ line2.display();
+ line2.move(moveSpeed);
+ }
+ if (bar3) {
+ line3.display();
+ line3.move(moveSpeed);
+ }
+ if (bar4) {
+ line4.display();
+ line4.move(moveSpeed);
+ }
+ if (bar5) {
+ line5.display();
+ line5.move(moveSpeed);
+ }
+ if (bar6) {
+ line6.display();
+ line6.move(moveSpeed);
+ }
+ if (bar7) {
+ line7.display();
+ line7.move(moveSpeed);
+ }
+ }
+ */
 
 // Triggers a note after 2.4 sec, every beat (600 ms). 
 void noteTrigger() {
@@ -355,50 +353,52 @@ void noteTrigger() {
   }
 }
 
+/*
 void soundTrigger() {
-  if (millis() >= 5800 && soundArrIndex < sound.length) {
-
-    elapsedTimeSound = millis() - lastTimeSound;
-    // 
-    if (elapsedTimeSound >= 600 * soundSpeed) {
-      lastTimeSound = millis();
-      switch(sound[soundArrIndex]) {
-      case 523:
-        sine.play(523, amp);
-        soundArrIndex++;
-        break;
-      case 587:
-        sine.play(587, amp);
-        soundArrIndex++;
-        break;
-      case 659:
-        sine.play(659, amp);
-        soundArrIndex++;
-        break;
-      case 698:
-        sine.play(698, amp);
-        soundArrIndex++;
-        break;
-      case 783:
-        sine.play(783, amp);
-        soundArrIndex++;
-        break;
-      case 880:
-        sine.play(880, amp);
-        soundArrIndex++;
-        break;
-      case 987:
-        sine.play(987, amp);
-        soundArrIndex++;
-        break;
-      case 0:
-        sine.stop();
-        soundArrIndex++;
-        break;
-      }
-    }
-  }
-}
+ if (millis() >= 5800 && soundArrIndex < sound.length) {
+ 
+ elapsedTimeSound = millis() - lastTimeSound;
+ // 
+ if (elapsedTimeSound >= 600 * soundSpeed) {
+ lastTimeSound = millis();
+ switch(sound[soundArrIndex]) {
+ case 523:
+ sine.play(523, amp);
+ soundArrIndex++;
+ break;
+ case 587:
+ sine.play(587, amp);
+ soundArrIndex++;
+ break;
+ case 659:
+ sine.play(659, amp);
+ soundArrIndex++;
+ break;
+ case 698:
+ sine.play(698, amp);
+ soundArrIndex++;
+ break;
+ case 783:
+ sine.play(783, amp);
+ soundArrIndex++;
+ break;
+ case 880:
+ sine.play(880, amp);
+ soundArrIndex++;
+ break;
+ case 987:
+ sine.play(987, amp);
+ soundArrIndex++;
+ break;
+ case 0:
+ sine.stop();
+ soundArrIndex++;
+ break;
+ }
+ }
+ }
+ }
+ */
 
 void C() {
   notes.add(new Note(1053, 357, 0, 255, 0));
@@ -459,15 +459,15 @@ void B() {
 }
 
 void noteCheck() {
-  if (myPort.available() > 0) {  // If data is available,
-    receivedNote = myPort.readChar();         // read it and store it in val
-    //if (receivedNote != 'N')
-      //println(receivedNote);
-  }
 
   if (h1 && h2 && h3 && h4 && h5 && h6 && h7) {
     C = true;
-    //println("C NOTE COVERED!");
+    println("C NOTE COVERED!");
+    sine.play(523, amp);
+    if (millis()-lastRecordedTime>interval) {
+      sine.stop();
+      lastRecordedTime = millis();
+    }
     h1 = false;
     h2 = false;
     h3 = false;
@@ -477,7 +477,12 @@ void noteCheck() {
     h7 = false;
   } else if (h1 && h2 && h3 && h4 && h5 && h6 && !h7) {
     D = true;
-    //println("D NOTE COVERED!");
+    println("D NOTE COVERED!");
+    sine.play(587, amp);
+    if (millis()-lastRecordedTime>interval) {
+      sine.stop();
+      lastRecordedTime = millis();
+    }
     h1 = false;
     h2 = false;
     h3 = false;
@@ -487,7 +492,12 @@ void noteCheck() {
     h7 = false;
   } else if (h1 && h2 && h3 && h4 && h5 && !h6 && !h7) {
     E = true;
-    //println("E NOTE COVERED!");
+    println("E NOTE COVERED!");
+    sine.play(659, amp);
+    if (millis()-lastRecordedTime>interval) {
+      sine.stop();
+      lastRecordedTime = millis();
+    }
     h1 = false;
     h2 = false;
     h3 = false;
@@ -497,7 +507,12 @@ void noteCheck() {
     h7 = false;
   } else if (h1 && h2 && h3 && h4 && !h5 && h6 && h7) {
     F = true;
-    //println("F NOTE COVERED!");
+    println("F NOTE COVERED!");
+    sine.play(698, amp);
+    if (millis()-lastRecordedTime>interval) {
+      sine.stop();
+      lastRecordedTime = millis();
+    }
     h1 = false;
     h2 = false;
     h3 = false;
@@ -507,7 +522,12 @@ void noteCheck() {
     h7 = false;
   } else if (h1 && h2 && h3 && !h4 && !h5 && !h6 && !h7) {
     G = true;
-    //println("G NOTE COVERED!");
+    println("G NOTE COVERED!");
+    sine.play(783, amp);
+    if (millis()-lastRecordedTime>interval) {
+      sine.stop();
+      lastRecordedTime = millis();
+    }
     h1 = false;
     h2 = false;
     h3 = false;
@@ -517,7 +537,12 @@ void noteCheck() {
     h7 = false;
   } else if (h1 && h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
     A = true;
-    //println("A NOTE COVERED!");
+    println("A NOTE COVERED!");
+    sine.play(880, amp);
+    if (millis()-lastRecordedTime>interval) {
+      sine.stop();
+      lastRecordedTime = millis();
+    }
     h1 = false;
     h2 = false;
     h3 = false;
@@ -527,7 +552,12 @@ void noteCheck() {
     h7 = false;
   } else if (h1 && !h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
     B = true;
-    //println("B NOTE COVERED!");
+    println("B NOTE COVERED!");
+    sine.play(987, amp);
+    if (millis()-lastRecordedTime>interval) {
+      sine.stop();
+      lastRecordedTime = millis();
+    }
     h1 = false;
     h2 = false;
     h3 = false;
@@ -543,27 +573,5 @@ void noteCheck() {
     G = false;
     A = false;
     B = false;
-  }
-  if (C && receivedNote == 'C') {
-    println("C NOTE COVERED!");
-    points++;
-  } else if (D && receivedNote == 'D') {
-    println("D NOTE COVERED!");
-    points++;
-  } else if (E && receivedNote == 'E') {
-    println("E NOTE COVERED!");
-    points++;
-  } else if (F && receivedNote == 'F') {
-    println("F NOTE COVERED!");
-    points++;
-  } else if (G && receivedNote == 'G') {
-    println("G NOTE COVERED!");
-    points++;
-  } else if (A && receivedNote == 'A') {
-    println("A NOTE COVERED!");
-    points++;
-  } else if (B && receivedNote == 'B') {
-    println("B NOTE COVERED!");
-    points++;
   }
 }
