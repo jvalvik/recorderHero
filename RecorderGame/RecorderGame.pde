@@ -1,3 +1,4 @@
+import processing.serial.*;
 import processing.sound.*;
 SinOsc sine;
 float amp = 0.5;
@@ -5,6 +6,7 @@ int freq;
 
 Button startbutton;
 Button stopbutton;
+Button pointShow;
 boolean stop = false;
 boolean start = true;
 
@@ -14,6 +16,12 @@ PImage img;
 Note c;
 int speed = 1;
 int bpm;
+
+// Variables for receiving data via Bluetooth
+Serial myPort;  // Create object from Serial class
+char receivedNote;      // Data received from the serial port
+
+int points = 0;
 
 // Variables for spawning bars.
 int elapsedTime;
@@ -32,7 +40,7 @@ int soundArrIndex = 0;
 
 float moveSpeed = 5;
 
-float songSpeed = 1; // Variable that should help scale the speed of bars and notes. 1 = 100% speed, 0.5 = 200%, 2 = 50% speed.
+float songSpeed = 2; // Variable that should help scale the speed of bars and notes. 1 = 100% speed, 0.5 = 200%, 2 = 50% speed.
 float soundSpeed = (songSpeed/2)*0.98;
 
 boolean bar1 = false;
@@ -117,6 +125,7 @@ final static ArrayList<barLine> bars = new ArrayList();
 
 void setup() {
   frameRate(60);  
+  printArray(Serial.list()); // Prints available COMs
   size(1057, 816);
   background(255);
   img = loadImage("recorder3_0.jpg");
@@ -131,6 +140,9 @@ void setup() {
 
   stopbutton = new Button(460, 100, 100, 100, "Stop", 255, 255, 255);
   startbutton = new Button(660, 100, 100, 100, "Start", 255, 255, 255);
+  
+  String portName = Serial.list()[2]; // assigns bluetooth COM to portName
+  myPort = new Serial(this, portName, 115200);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -138,6 +150,8 @@ void setup() {
 void draw() {
   background(img); 
   fill(155);
+  
+  pointShow = new Button(800, 100, 100, 100, str(points), 255, 255, 255);
 
   if (startbutton.isClicked()) {
     start = true;
@@ -151,6 +165,8 @@ void draw() {
   startbutton.render();
   stopbutton.update();
   stopbutton.render();
+  pointShow.update();
+  pointShow.render();
   
   // These circles are made to help with collision detection of notes.
   hole1 = createShape(ELLIPSE, 43, 357, 22, 22);
@@ -180,7 +196,7 @@ void draw() {
   //barTrigger();
 
   //Functions for spawning notes.
-  println(lastTimeNotes);
+  //println(lastTimeNotes);
   
   //if (start == true) {
     noteTrigger();
@@ -443,10 +459,15 @@ void B() {
 }
 
 void noteCheck() {
+  if (myPort.available() > 0) {  // If data is available,
+    receivedNote = myPort.readChar();         // read it and store it in val
+    //if (receivedNote != 'N')
+      //println(receivedNote);
+  }
 
   if (h1 && h2 && h3 && h4 && h5 && h6 && h7) {
     C = true;
-    println("C NOTE COVERED!");
+    //println("C NOTE COVERED!");
     h1 = false;
     h2 = false;
     h3 = false;
@@ -456,7 +477,7 @@ void noteCheck() {
     h7 = false;
   } else if (h1 && h2 && h3 && h4 && h5 && h6 && !h7) {
     D = true;
-    println("D NOTE COVERED!");
+    //println("D NOTE COVERED!");
     h1 = false;
     h2 = false;
     h3 = false;
@@ -466,7 +487,7 @@ void noteCheck() {
     h7 = false;
   } else if (h1 && h2 && h3 && h4 && h5 && !h6 && !h7) {
     E = true;
-    println("E NOTE COVERED!");
+    //println("E NOTE COVERED!");
     h1 = false;
     h2 = false;
     h3 = false;
@@ -476,7 +497,7 @@ void noteCheck() {
     h7 = false;
   } else if (h1 && h2 && h3 && h4 && !h5 && h6 && h7) {
     F = true;
-    println("F NOTE COVERED!");
+    //println("F NOTE COVERED!");
     h1 = false;
     h2 = false;
     h3 = false;
@@ -486,7 +507,7 @@ void noteCheck() {
     h7 = false;
   } else if (h1 && h2 && h3 && !h4 && !h5 && !h6 && !h7) {
     G = true;
-    println("G NOTE COVERED!");
+    //println("G NOTE COVERED!");
     h1 = false;
     h2 = false;
     h3 = false;
@@ -496,7 +517,7 @@ void noteCheck() {
     h7 = false;
   } else if (h1 && h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
     A = true;
-    println("A NOTE COVERED!");
+    //println("A NOTE COVERED!");
     h1 = false;
     h2 = false;
     h3 = false;
@@ -506,7 +527,7 @@ void noteCheck() {
     h7 = false;
   } else if (h1 && !h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
     B = true;
-    println("B NOTE COVERED!");
+    //println("B NOTE COVERED!");
     h1 = false;
     h2 = false;
     h3 = false;
@@ -522,5 +543,27 @@ void noteCheck() {
     G = false;
     A = false;
     B = false;
+  }
+  if (C && receivedNote == 'C') {
+    println("C NOTE COVERED!");
+    points++;
+  } else if (D && receivedNote == 'D') {
+    println("D NOTE COVERED!");
+    points++;
+  } else if (E && receivedNote == 'E') {
+    println("E NOTE COVERED!");
+    points++;
+  } else if (F && receivedNote == 'F') {
+    println("F NOTE COVERED!");
+    points++;
+  } else if (G && receivedNote == 'G') {
+    println("G NOTE COVERED!");
+    points++;
+  } else if (A && receivedNote == 'A') {
+    println("A NOTE COVERED!");
+    points++;
+  } else if (B && receivedNote == 'B') {
+    println("B NOTE COVERED!");
+    points++;
   }
 }
