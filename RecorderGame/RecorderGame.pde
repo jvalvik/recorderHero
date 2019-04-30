@@ -7,6 +7,9 @@ int freq;
 Button stopbutton;
 Button startbutton;
 Button pointShow;
+Button increaseSpeed;
+Button decreaseSpeed;
+Button speedShow;
 
 boolean start = true;
 boolean stop = false;
@@ -23,6 +26,7 @@ int bpm;
 Serial myPort;  // Create object from Serial class
 char receivedNote;      // Data received from the serial port
 
+boolean addOnce = false;
 int points = 0;
 
 // Variables for spawning bars.
@@ -148,11 +152,14 @@ void setup() {
   soundArrIndex = 0;
 
 
-  stopbutton = new Button(400, 100, 100, 100, "Stop", 255, 255, 255);
-  startbutton = new Button(600, 100, 100, 100, "Start", 255, 255, 255);
-  
-  String portName = Serial.list()[1]; // assigns bluetooth COM to portName
-  myPort = new Serial(this, portName, 115200);
+  stopbutton = new Button(800, 100, 100, 100, "Stop", 255, 255, 255);
+  startbutton = new Button(900, 100, 100, 100, "Start", 255, 255, 255);
+  decreaseSpeed = new Button(100, 100, 300, 100, "Decrease Speed", 255, 255, 255);
+  increaseSpeed = new Button(400, 100, 300, 100, "Increase Speed", 255, 255, 255);
+
+
+  /*String portName = Serial.list()[1]; // assigns bluetooth COM to portName
+   myPort = new Serial(this, portName, 115200);*/
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -160,8 +167,17 @@ void setup() {
 void draw() {
   background(img); 
   fill(155);
-  
-  pointShow = new Button(800, 100, 100, 100, str(points), 255, 255, 255);
+
+  pointShow = new Button(850, 200, 100, 100, str(points), 255, 255, 255);
+  speedShow = new Button(350, 200, 100, 100, str(songSpeed), 255, 255, 255);
+
+  if (increaseSpeed.isClicked()) {
+    songSpeed = songSpeed*2;
+  }
+
+  if (decreaseSpeed.isClicked()) {
+    songSpeed = songSpeed/2;
+  }
 
   if (stopbutton.isClicked()) {
     stop = true;
@@ -174,14 +190,21 @@ void draw() {
     soundArrIndex = 0;
     notes.removeAll(notes);
     sine.stop();
+    points = 0;
   }
 
   startbutton.update();
   startbutton.render();
   stopbutton.update();
   stopbutton.render();
+  increaseSpeed.render();
+  increaseSpeed.update();
+  decreaseSpeed.render();
+  decreaseSpeed.update();
   pointShow.update();
   pointShow.render();
+  speedShow.update();
+  speedShow.render();
 
   // These circles are made to help with collision detection of notes.
   hole1 = createShape(ELLIPSE, 43, 357, 22, 22);
@@ -211,7 +234,7 @@ void draw() {
   //barTrigger();
 
   //Functions for spawning notes.
-  //println(lastRecordedTime);
+  //println(points);
 
   if (startbutton.isClicked()) {
     start = true;
@@ -322,7 +345,7 @@ void noteTrigger() {
 
     elapsedTimeNotes = millis() - lastTimeNotes;
     // 
-    if (elapsedTimeNotes >= 600 * songSpeed) {
+    if (elapsedTimeNotes >= 600 / songSpeed) {
       //println("ELAPSED TIME: " + elapsedTime);
       lastTimeNotes = millis();
       switch(melody[melodyArrIndex]) {
@@ -475,119 +498,85 @@ void B() {
   //println("B NOTE ADDED TO ARRAY");
 }
 
+
 void noteCheck() {
-  
-  if (myPort.available() > 0) {  // If data is available,
-    receivedNote = myPort.readChar();         // read it and store it in val
-    //if (receivedNote != 'N')
-      //println(receivedNote);
-  }
+
+  /*if (myPort.available() > 0) {  // If data is available,
+   receivedNote = myPort.readChar();         // read it and store it in val
+   //if (receivedNote != 'N')
+   //println(receivedNote);
+   }*/
 
   if (h1 && h2 && h3 && h4 && h5 && h6 && h7) {
     C = true;
-    //println("C NOTE COVERED!");
     sine.play(523, amp);
     if (millis()-lastRecordedTime>interval) {
       sine.stop();
+      score();
+      println("C NOTE COVERED!");
       lastRecordedTime = millis();
     }
-    h1 = false;
-    h2 = false;
-    h3 = false;
-    h4 = false;
-    h5 = false;
-    h6 = false;
-    h7 = false;
+    falsefy();
   } else if (h1 && h2 && h3 && h4 && h5 && h6 && !h7) {
     D = true;
-    //println("D NOTE COVERED!");
     sine.play(587, amp);
     if (millis()-lastRecordedTime>interval) {
       sine.stop();
+      score();
+      println("D NOTE COVERED!");
       lastRecordedTime = millis();
     }
-    h1 = false;
-    h2 = false;
-    h3 = false;
-    h4 = false;
-    h5 = false;
-    h6 = false;
-    h7 = false;
+    falsefy();
   } else if (h1 && h2 && h3 && h4 && h5 && !h6 && !h7) {
     E = true;
-    //println("E NOTE COVERED!");
     sine.play(659, amp);
     if (millis()-lastRecordedTime>interval) {
       sine.stop();
+      score();
+      println("E NOTE COVERED!");
       lastRecordedTime = millis();
     }
-    h1 = false;
-    h2 = false;
-    h3 = false;
-    h4 = false;
-    h5 = false;
-    h6 = false;
-    h7 = false;
+    falsefy();
   } else if (h1 && h2 && h3 && h4 && !h5 && h6 && h7) {
     F = true;
-    //println("F NOTE COVERED!");
     sine.play(698, amp);
     if (millis()-lastRecordedTime>interval) {
       sine.stop();
+      score();
+      println("F NOTE COVERED!");
       lastRecordedTime = millis();
     }
-    h1 = false;
-    h2 = false;
-    h3 = false;
-    h4 = false;
-    h5 = false;
-    h6 = false;
-    h7 = false;
+    falsefy();
   } else if (h1 && h2 && h3 && !h4 && !h5 && !h6 && !h7) {
     G = true;
-    //println("G NOTE COVERED!");
     sine.play(783, amp);
     if (millis()-lastRecordedTime>interval) {
       sine.stop();
+      score();
+      println("G NOTE COVERED!");
       lastRecordedTime = millis();
     }
-    h1 = false;
-    h2 = false;
-    h3 = false;
-    h4 = false;
-    h5 = false;
-    h6 = false;
-    h7 = false;
+    falsefy();
   } else if (h1 && h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
     A = true;
-    //println("A NOTE COVERED!");
     sine.play(880, amp);
     if (millis()-lastRecordedTime>interval) {
       sine.stop();
+      score();
+      println("A NOTE COVERED!");
       lastRecordedTime = millis();
     }
-    h1 = false;
-    h2 = false;
-    h3 = false;
-    h4 = false;
-    h5 = false;
-    h6 = false;
-    h7 = false;
+    falsefy();
   } else if (h1 && !h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
     B = true;
-    //println("B NOTE COVERED!");
     sine.play(987, amp);
     if (millis()-lastRecordedTime>interval) {
       sine.stop();
+      score();
+      println("B NOTE COVERED!");
       lastRecordedTime = millis();
     }
-    h1 = false;
-    h2 = false;
-    h3 = false;
-    h4 = false;
-    h5 = false;
-    h6 = false;
-    h7 = false;
+    falsefy();
   } else {
     C = false;
     D = false;
@@ -597,26 +586,43 @@ void noteCheck() {
     A = false;
     B = false;
   }
+  /*
   if (C && receivedNote == 'C') {
-    println("C NOTE COVERED!");
-    points++;
-  } else if (D && receivedNote == 'D') {
-    println("D NOTE COVERED!");
-    points++;
-  } else if (E && receivedNote == 'E') {
-    println("E NOTE COVERED!");
-    points++;
-  } else if (F && receivedNote == 'F') {
-    println("F NOTE COVERED!");
-    points++;
-  } else if (G && receivedNote == 'G') {
-    println("G NOTE COVERED!");
-    points++;
-  } else if (A && receivedNote == 'A') {
-    println("A NOTE COVERED!");
-    points++;
-  } else if (B && receivedNote == 'B') {
-    println("B NOTE COVERED!");
-    points++;
-  }
+   points++;
+   println("C NOTE COVERED!");
+   } else if (D && receivedNote == 'D') {
+   println("D NOTE COVERED!");
+   points++;
+   } else if (E && receivedNote == 'E') {
+   println("E NOTE COVERED!");
+   points++;
+   } else if (F && receivedNote == 'F') {
+   println("F NOTE COVERED!");
+   points++;
+   } else if (G && receivedNote == 'G') {
+   println("G NOTE COVERED!");
+   points++;
+   } else if (A && receivedNote == 'A') {
+   println("A NOTE COVERED!");
+   points++;
+   } else if (B && receivedNote == 'B') {
+   println("B NOTE COVERED!");
+   points++;
+   }
+   */
+}
+
+void score() {
+  points++;
+  addOnce = false;
+}
+
+void falsefy() {
+  h1 = false;
+  h2 = false;
+  h3 = false;
+  h4 = false;
+  h5 = false;
+  h6 = false;
+  h7 = false;
 }
