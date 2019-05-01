@@ -1,7 +1,7 @@
 import processing.serial.*;
 import processing.sound.*;
 SinOsc sine;
-float amp = 0.5;
+float amp = 1;
 int freq;
 
 Button stopbutton;
@@ -14,11 +14,16 @@ Button speedShow;
 boolean start = true;
 boolean stop = false;
 
-int interval = 80;
+int noteTrailWidth = 35;
+int noteTrailHeight = 15;
+int noteTrailRadii = 7;
+
 int lastRecordedTime = 0;
 
+int pointInterval = 100;
+int lastPointTime = 0;
+
 PImage img;
-Note c;
 int speed = 1;
 int bpm;
 
@@ -43,11 +48,8 @@ int elapsedTimeSound;
 int lastTimeSound;
 int soundArrIndex;
 
-
 float moveSpeed = 5;
-
 float songSpeed = 1; // Variable that should help scale the speed of bars and notes. 1 = 100% speed, 0.5 = 200%, 2 = 50% speed.
-float soundSpeed = (songSpeed/2)*0.98;
 
 boolean bar1 = false;
 boolean bar2 = false;
@@ -103,7 +105,40 @@ String[] melody = {
   "C", "C", "G", "G", 
   "A", "A", "G", "PAUSE", 
   "F", "F", "E", "E", 
-  "D", "D", "C", "PAUSE", };
+  "D", "D", "C", "PAUSE"};
+
+// Trail length in beats (quarternotes)
+int[] noteTrail = {
+  4, 4, 4, 4, 
+  4, 4, 8, 0, 
+  4, 4, 3, 4, 
+  4, 4, 8, 0, 
+  4, 4, 3, 4, 
+  4, 4, 8, 0, 
+  4, 4, 3, 4, 
+  4, 4, 8, 0, 
+  4, 4, 3, 4, 
+  4, 4, 8, 0, 
+  4, 4, 4, 4, 
+  4, 4, 8, 0};
+
+
+/*
+String[] melody = {
+ "C", "", "", "", "C", "", "", "", "G", "", "", "", "G", "", "", "", 
+ "A", "", "", "", "A", "", "", "", "G", "", "", "", "", "", "", "", 
+ "F", "", "", "", "F", "", "", "", "E", "", "", "", "E", "", "", "", 
+ "D", "", "", "", "D", "", "", "", "C", "", "", "", "", "", "", "", 
+ "G", "", "", "", "G", "", "", "", "F", "", "", "", "F", "", "", "", 
+ "E", "", "", "", "E", "", "", "", "D", "", "", "", "", "", "", "", 
+ "G", "", "", "", "G", "", "", "", "F", "", "", "", "F", "", "", "", 
+ "E", "", "", "", "E", "", "", "", "D", "", "", "", "", "", "", "", 
+ "C", "", "", "", "C", "", "", "", "G", "", "", "", "G", "", "", "", 
+ "A", "", "", "", "A", "", "", "", "G", "", "", "", "", "", "", "", 
+ "F", "", "", "", "F", "", "", "", "E", "", "", "", "E", "", "", "", 
+ "D", "", "", "", "D", "", "", "", "C", "", "", "", "", "", "", "", };
+ */
+
 
 int[] sound = {
   523, 0, 523, 0, 783, 0, 783, 0, 
@@ -122,6 +157,8 @@ int[] sound = {
 
 final static ArrayList<Note> notes = new ArrayList();
 
+final static ArrayList<noteTrail> noteTrails = new ArrayList();
+
 final static ArrayList<barLine> bars = new ArrayList();
 
 //final static ArrayList<Note> endedNotes = new ArrayList();
@@ -135,7 +172,8 @@ void setup() {
   printArray(Serial.list()); // Prints available COMs
   background(255);
   img = loadImage("recorder3_0.jpg");
-  sine = new SinOsc(this); 
+  sine = new SinOsc(this);
+  rectMode(CORNER);
   line1 = new barLine((1014/5)*5, 250, (1014/5)*5, 750);
   line2 = new barLine((1014/5)*5, 250, (1014/5)*5, 750);
   line3 = new barLine((1014/5)*5, 250, (1014/5)*5, 750);
@@ -158,25 +196,29 @@ void setup() {
   increaseSpeed = new Button(400, 100, 300, 100, "Increase Speed", 255, 255, 255);
 
 
-  /*String portName = Serial.list()[1]; // assigns bluetooth COM to portName
-   myPort = new Serial(this, portName, 115200);*/
+  String portName = Serial.list()[1]; // assigns bluetooth COM to portName
+  myPort = new Serial(this, portName, 115200);
 }
 
 //-----------------------------------------------------------------------------------------------
 
 void draw() {
-  background(img); 
+  background(img);
   fill(155);
 
   pointShow = new Button(850, 200, 100, 100, str(points), 255, 255, 255);
   speedShow = new Button(350, 200, 100, 100, str(songSpeed), 255, 255, 255);
 
   if (increaseSpeed.isClicked()) {
-    songSpeed = songSpeed*2;
+    if (songSpeed < 3) {
+      songSpeed = songSpeed+0.2;
+    }
   }
 
   if (decreaseSpeed.isClicked()) {
-    songSpeed = songSpeed/2;
+    if (songSpeed > 0.20) {
+      songSpeed = songSpeed-0.1;
+    }
   }
 
   if (stopbutton.isClicked()) {
@@ -189,6 +231,7 @@ void draw() {
     lastTimeSound = millis();
     soundArrIndex = 0;
     notes.removeAll(notes);
+    noteTrails.removeAll(noteTrails);
     sine.stop();
     points = 0;
   }
@@ -243,7 +286,9 @@ void draw() {
 
   if (start == true) {
     noteTrigger();
-    //soundTrigger();
+    for (noteTrail n : noteTrails) {
+      n.script();
+    }
     for (Note n : notes) {
       n.script();
       noteCheck();
@@ -255,14 +300,275 @@ void draw() {
 // ----- METHODS -------
 //-----------------------------------------------------------------------------------------------
 
-// Function that triggers every bar (2400 milliseconds at 100% speed). 
+// Triggers a note after 2.4 sec, every beat (600 ms).
+void noteTrigger() {
+  if (millis() >= 2400 && melodyArrIndex < melody.length) {
+
+    elapsedTimeNotes = millis() - lastTimeNotes;
+    //
+    if (elapsedTimeNotes >= 600 / songSpeed) {
+      //println("ELAPSED TIME: " + elapsedTime);
+      lastTimeNotes = millis();
+      switch(melody[melodyArrIndex]) {
+      case "C":
+        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex + "--------TIME: " +elapsedTimeNotes);
+        C();
+        melodyArrIndex++;
+        break;
+      case "D":
+        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
+        D();
+        melodyArrIndex++;
+        break;
+      case "E":
+        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
+        E();
+        melodyArrIndex++;
+        break;
+      case "F":
+        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);  
+        F();
+        melodyArrIndex++;
+        break;
+      case "G":
+        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
+        G();
+        melodyArrIndex++;
+        break;
+      case "A":
+        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
+        A();
+        melodyArrIndex++;
+        break;
+      case "B":
+        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
+        B();
+        melodyArrIndex++;
+        break;
+      case "PAUSE":
+        //println("Spawning " + melody[melodyArrIndex] + ". Nothing on this quater note. From array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
+        melodyArrIndex++;
+        break;
+      }
+    }
+  }
+}
+
+
+void C() {
+  notes.add(new Note(1053, 357, 0, 255, 0));
+  notes.add(new Note(1053, 416, 0, 255, 0));
+  notes.add(new Note(1053, 472, 0, 255, 0));
+  notes.add(new Note(1053, 526, 0, 255, 0));
+  notes.add(new Note(1053, 580, 0, 255, 0));
+  notes.add(new Note(1053, 629, 0, 255, 0));
+  notes.add(new Note(1053, 695, 0, 255, 0));
+  for (int i=1053; i<1053+(35*noteTrail[melodyArrIndex]); i+=noteTrailWidth-5) {
+    noteTrails.add(new noteTrail(i, 349, noteTrailWidth, noteTrailHeight, noteTrailRadii, 0, 255, 0));
+    noteTrails.add(new noteTrail(i, 408, noteTrailWidth, noteTrailHeight, noteTrailRadii, 0, 255, 0));
+    noteTrails.add(new noteTrail(i, 464, noteTrailWidth, noteTrailHeight, noteTrailRadii, 0, 255, 0));
+    noteTrails.add(new noteTrail(i, 518, noteTrailWidth, noteTrailHeight, noteTrailRadii, 0, 255, 0));
+    noteTrails.add(new noteTrail(i, 572, noteTrailWidth, noteTrailHeight, noteTrailRadii, 0, 255, 0));
+    noteTrails.add(new noteTrail(i, 622, noteTrailWidth, noteTrailHeight, noteTrailRadii, 0, 255, 0));
+    noteTrails.add(new noteTrail(i, 688, noteTrailWidth, noteTrailHeight, noteTrailRadii, 0, 255, 0));
+  }
+  //println("C NOTE ADDED TO ARRAY");
+}
+
+void D() {
+  notes.add(new Note(1053, 357, 255, 0, 0));
+  notes.add(new Note(1053, 416, 255, 0, 0));
+  notes.add(new Note(1053, 472, 255, 0, 0));
+  notes.add(new Note(1053, 526, 255, 0, 0));
+  notes.add(new Note(1053, 580, 255, 0, 0));
+  notes.add(new Note(1053, 629, 255, 0, 0));
+  for (int i=1053; i<1053+(35*noteTrail[melodyArrIndex]); i+=noteTrailWidth-5) {
+    noteTrails.add(new noteTrail(i, 349, noteTrailWidth, noteTrailHeight, noteTrailRadii, 255, 0, 0));
+    noteTrails.add(new noteTrail(i, 408, noteTrailWidth, noteTrailHeight, noteTrailRadii, 255, 0, 0));
+    noteTrails.add(new noteTrail(i, 464, noteTrailWidth, noteTrailHeight, noteTrailRadii, 255, 0, 0));
+    noteTrails.add(new noteTrail(i, 518, noteTrailWidth, noteTrailHeight, noteTrailRadii, 255, 0, 0));
+    noteTrails.add(new noteTrail(i, 572, noteTrailWidth, noteTrailHeight, noteTrailRadii, 255, 0, 0));
+    noteTrails.add(new noteTrail(i, 622, noteTrailWidth, noteTrailHeight, noteTrailRadii, 255, 0, 0));
+  }
+  //println("D NOTE ADDED TO ARRAY");
+}
+
+void E() {
+  notes.add(new Note(1053, 357, 255, 255, 0));
+  notes.add(new Note(1053, 416, 255, 255, 0));
+  notes.add(new Note(1053, 472, 255, 255, 0));
+  notes.add(new Note(1053, 526, 255, 255, 0));
+  notes.add(new Note(1053, 580, 255, 255, 0));
+  for (int i=1053; i<1053+(35*noteTrail[melodyArrIndex]); i+=noteTrailWidth-5) {
+    noteTrails.add(new noteTrail(i, 349, noteTrailWidth, noteTrailHeight, noteTrailRadii, 255, 255, 0));
+    noteTrails.add(new noteTrail(i, 408, noteTrailWidth, noteTrailHeight, noteTrailRadii, 255, 255, 0));
+    noteTrails.add(new noteTrail(i, 464, noteTrailWidth, noteTrailHeight, noteTrailRadii, 255, 255, 0));
+    noteTrails.add(new noteTrail(i, 518, noteTrailWidth, noteTrailHeight, noteTrailRadii, 255, 255, 0));
+    noteTrails.add(new noteTrail(i, 572, noteTrailWidth, noteTrailHeight, noteTrailRadii, 255, 255, 0));
+  }
+  //println("E NOTE ADDED TO ARRAY");
+}
+
+void F() {
+  notes.add(new Note(1053, 357, 0, 0, 255));
+  notes.add(new Note(1053, 416, 0, 0, 255));
+  notes.add(new Note(1053, 472, 0, 0, 255));
+  notes.add(new Note(1053, 526, 0, 0, 255));
+  notes.add(new Note(1053, 629, 0, 0, 255));
+  notes.add(new Note(1053, 695, 0, 0, 255));
+  for (int i=1053; i<1053+(35*noteTrail[melodyArrIndex]); i+=noteTrailWidth-5) {
+    noteTrails.add(new noteTrail(i, 349, noteTrailWidth, noteTrailHeight, noteTrailRadii, 0, 0, 255));
+    noteTrails.add(new noteTrail(i, 408, noteTrailWidth, noteTrailHeight, noteTrailRadii, 0, 0, 255));
+    noteTrails.add(new noteTrail(i, 464, noteTrailWidth, noteTrailHeight, noteTrailRadii, 0, 0, 255));
+    noteTrails.add(new noteTrail(i, 518, noteTrailWidth, noteTrailHeight, noteTrailRadii, 0, 0, 255));
+    noteTrails.add(new noteTrail(i, 622, noteTrailWidth, noteTrailHeight, noteTrailRadii, 0, 0, 255));
+    noteTrails.add(new noteTrail(i, 688, noteTrailWidth, noteTrailHeight, noteTrailRadii, 0, 0, 255));
+  }
+  //println("F NOTE ADDED TO ARRAY");
+}
+
+void G() {
+  notes.add(new Note(1053, 357, 255, 125, 0));
+  notes.add(new Note(1053, 416, 255, 125, 0));
+  notes.add(new Note(1053, 472, 255, 125, 0));
+  for (int i=1053; i<1053+(35*noteTrail[melodyArrIndex]); i+=noteTrailWidth-5) {
+    noteTrails.add(new noteTrail(i, 349, noteTrailWidth, noteTrailHeight, noteTrailRadii, 255, 125, 0));
+    noteTrails.add(new noteTrail(i, 408, noteTrailWidth, noteTrailHeight, noteTrailRadii, 255, 125, 0));
+    noteTrails.add(new noteTrail(i, 464, noteTrailWidth, noteTrailHeight, noteTrailRadii, 255, 125, 0));
+  }
+  //println("F NOTE ADDED TO ARRAY");
+}
+
+void A() {
+  notes.add(new Note(1053, 357, 0, 255, 255));
+  notes.add(new Note(1053, 416, 0, 255, 255));
+  for (int i=1053; i<1053+(35*noteTrail[melodyArrIndex]); i+=noteTrailWidth-5) {
+    noteTrails.add(new noteTrail(i, 349, noteTrailWidth, noteTrailHeight, noteTrailRadii, 0, 255, 255));
+    noteTrails.add(new noteTrail(i, 408, noteTrailWidth, noteTrailHeight, noteTrailRadii, 0, 255, 255));
+  }
+  //println("A NOTE ADDED TO ARRAY");
+}
+
+void B() {
+  notes.add(new Note(1053, 357, 255, 0, 125));
+  for (int i=1053; i<1053+(35*noteTrail[melodyArrIndex]); i+=noteTrailWidth-5) {
+    noteTrails.add(new noteTrail(i, 349, noteTrailWidth, noteTrailHeight, noteTrailRadii, 255, 0, 125));
+  }
+  //println("B NOTE ADDED TO ARRAY");
+}
+
+
+void noteCheck() {
+
+  if (myPort.available() > 0) {  // If data is available,
+    receivedNote = myPort.readChar();         // read it and store it in val
+    //if (receivedNote != 'N')
+    //println(receivedNote);
+
+    if (h1 && h2 && h3 && h4 && h5 && h6 && h7) {
+      C = true;
+      sine.play(523, amp);
+      falsefy();
+    } else if (h1 && h2 && h3 && h4 && h5 && h6 && !h7) {
+      D = true;
+      sine.play(587, amp);
+      falsefy();
+    } else if (h1 && h2 && h3 && h4 && h5 && !h6 && !h7) {
+      E = true;
+      sine.play(659, amp);
+      falsefy();
+    } else if (h1 && h2 && h3 && h4 && !h5 && h6 && h7) {
+      F = true;
+      sine.play(698, amp);
+      falsefy();
+    } else if (h1 && h2 && h3 && !h4 && !h5 && !h6 && !h7) {
+      G = true;
+      sine.play(783, amp);
+      falsefy();
+    } else if (h1 && h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
+      A = true;
+      sine.play(880, amp);
+      falsefy();
+    } else if (h1 && !h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
+      B = true;
+      sine.play(987, amp);
+      falsefy();
+    } else {
+      C = false;
+      D = false;
+      E = false;
+      F = false;
+      G = false;
+      A = false;
+      B = false;
+      //sineStop();
+    }
+
+    if (C && receivedNote == 'C') {
+      score();
+    } else if (D && receivedNote == 'D') {
+      score();
+    } else if (E && receivedNote == 'E') {
+      score();
+    } else if (F && receivedNote == 'F') {
+      score();
+    } else if (G && receivedNote == 'G') {
+      score();
+    } else if (A && receivedNote == 'A') {
+      score();
+    } else if (B && receivedNote == 'B') {
+      score();
+    }
+  }
+}
+
+void score() {
+  if (millis()-lastPointTime>pointInterval) {
+    points++;
+    addOnce = false;
+  }
+  lastPointTime = millis();
+}
+
+void sineStop() {
+  if (millis()-lastRecordedTime>elapsedTimeNotes) {
+    sine.stop();
+    lastRecordedTime = millis();
+  }
+}
+
+void falsefy() {
+  h1 = false;
+  h2 = false;
+  h3 = false;
+  h4 = false;
+  h5 = false;
+  h6 = false;
+  h7 = false;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Function that triggers every bar (2400 milliseconds at 100% speed).
 // Twinkle Twinkle is at 100 BPM. One bar consists of 4 beats. 1 beat = 60.000/BPM (600ms in our case)
 // The switch goes increments every bar and controls which bar is being spawned. Goes 1-5, 1-5, 1-5 forever.
 
 /*
 void barTrigger() {
  elapsedTime = millis() - lastTime;
- // 
+ //
  if (elapsedTime >= 2400 * songSpeed) {
  println("Spawning bar " + switchNum + "BAR TIMING: " + elapsedTime);
  lastTime = millis();
@@ -338,291 +644,3 @@ void barTrigger() {
  }
  }
  */
-
-// Triggers a note after 2.4 sec, every beat (600 ms). 
-void noteTrigger() {
-  if (millis() >= 2400 && melodyArrIndex < melody.length) {
-
-    elapsedTimeNotes = millis() - lastTimeNotes;
-    // 
-    if (elapsedTimeNotes >= 600 / songSpeed) {
-      //println("ELAPSED TIME: " + elapsedTime);
-      lastTimeNotes = millis();
-      switch(melody[melodyArrIndex]) {
-      case "C":
-        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex + "--------TIME: " +elapsedTimeNotes);
-        C();
-        melodyArrIndex++;
-        break;
-      case "D":
-        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
-        D();
-        melodyArrIndex++;
-        break;
-      case "E":
-        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
-        E();
-        melodyArrIndex++;
-        break;
-      case "F":
-        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);  
-        F();
-        melodyArrIndex++;
-        break;
-      case "G":
-        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
-        G();
-        melodyArrIndex++;
-        break;
-      case "A":
-        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
-        A();
-        melodyArrIndex++;
-        break;
-      case "B":
-        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
-        B();
-        melodyArrIndex++;
-        break;
-      case "PAUSE":
-        //println("Spawning " + melody[melodyArrIndex] + ". Nothing on this quater note. From array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
-        melodyArrIndex++;
-        break;
-      }
-    }
-  }
-}
-
-/*
-void soundTrigger() {
- if (millis() >= 5800 && soundArrIndex < sound.length) {
- 
- elapsedTimeSound = millis() - lastTimeSound;
- // 
- if (elapsedTimeSound >= 600 * soundSpeed) {
- lastTimeSound = millis();
- switch(sound[soundArrIndex]) {
- case 523:
- sine.play(523, amp);
- soundArrIndex++;
- break;
- case 587:
- sine.play(587, amp);
- soundArrIndex++;
- break;
- case 659:
- sine.play(659, amp);
- soundArrIndex++;
- break;
- case 698:
- sine.play(698, amp);
- soundArrIndex++;
- break;
- case 783:
- sine.play(783, amp);
- soundArrIndex++;
- break;
- case 880:
- sine.play(880, amp);
- soundArrIndex++;
- break;
- case 987:
- sine.play(987, amp);
- soundArrIndex++;
- break;
- case 0:
- sine.stop();
- soundArrIndex++;
- break;
- }
- }
- }
- }
- */
-
-void C() {
-  notes.add(new Note(1053, 357, 0, 255, 0));
-  notes.add(new Note(1053, 416, 0, 255, 0));
-  notes.add(new Note(1053, 472, 0, 255, 0));
-  notes.add(new Note(1053, 526, 0, 255, 0));
-  notes.add(new Note(1053, 580, 0, 255, 0));
-  notes.add(new Note(1053, 629, 0, 255, 0));
-  notes.add(new Note(1053, 695, 0, 255, 0));
-  //println("C NOTE ADDED TO ARRAY");
-}
-
-void D() {
-  notes.add(new Note(1053, 357, 255, 0, 0));
-  notes.add(new Note(1053, 416, 255, 0, 0));
-  notes.add(new Note(1053, 472, 255, 0, 0));
-  notes.add(new Note(1053, 526, 255, 0, 0));
-  notes.add(new Note(1053, 580, 255, 0, 0));
-  notes.add(new Note(1053, 629, 255, 0, 0));
-  //println("D NOTE ADDED TO ARRAY");
-}
-
-void E() {
-  notes.add(new Note(1053, 357, 255, 255, 0));
-  notes.add(new Note(1053, 416, 255, 255, 0));
-  notes.add(new Note(1053, 472, 255, 255, 0));
-  notes.add(new Note(1053, 526, 255, 255, 0));
-  notes.add(new Note(1053, 580, 255, 255, 0));
-  //println("E NOTE ADDED TO ARRAY");
-}
-
-void F() {
-  notes.add(new Note(1053, 357, 0, 0, 255));
-  notes.add(new Note(1053, 416, 0, 0, 255));
-  notes.add(new Note(1053, 472, 0, 0, 255));
-  notes.add(new Note(1053, 526, 0, 0, 255));
-  notes.add(new Note(1053, 629, 0, 0, 255));
-  notes.add(new Note(1053, 695, 0, 0, 255));
-  //println("F NOTE ADDED TO ARRAY");
-}
-
-void G() {
-  notes.add(new Note(1053, 357, 255, 125, 0));
-  notes.add(new Note(1053, 416, 255, 125, 0));
-  notes.add(new Note(1053, 472, 255, 125, 0));
-  //println("F NOTE ADDED TO ARRAY");
-}
-
-void A() {
-  notes.add(new Note(1053, 357, 0, 255, 255));
-  notes.add(new Note(1053, 416, 0, 255, 255));
-  //println("A NOTE ADDED TO ARRAY");
-}
-
-void B() {
-  notes.add(new Note(1053, 357, 255, 0, 125));
-  //println("B NOTE ADDED TO ARRAY");
-}
-
-
-void noteCheck() {
-
-  /*if (myPort.available() > 0) {  // If data is available,
-   receivedNote = myPort.readChar();         // read it and store it in val
-   //if (receivedNote != 'N')
-   //println(receivedNote);
-   }*/
-
-  if (h1 && h2 && h3 && h4 && h5 && h6 && h7) {
-    C = true;
-    sine.play(523, amp);
-    if (millis()-lastRecordedTime>interval) {
-      sine.stop();
-      score();
-      println("C NOTE COVERED!");
-      lastRecordedTime = millis();
-    }
-    falsefy();
-  } else if (h1 && h2 && h3 && h4 && h5 && h6 && !h7) {
-    D = true;
-    sine.play(587, amp);
-    if (millis()-lastRecordedTime>interval) {
-      sine.stop();
-      score();
-      println("D NOTE COVERED!");
-      lastRecordedTime = millis();
-    }
-    falsefy();
-  } else if (h1 && h2 && h3 && h4 && h5 && !h6 && !h7) {
-    E = true;
-    sine.play(659, amp);
-    if (millis()-lastRecordedTime>interval) {
-      sine.stop();
-      score();
-      println("E NOTE COVERED!");
-      lastRecordedTime = millis();
-    }
-    falsefy();
-  } else if (h1 && h2 && h3 && h4 && !h5 && h6 && h7) {
-    F = true;
-    sine.play(698, amp);
-    if (millis()-lastRecordedTime>interval) {
-      sine.stop();
-      score();
-      println("F NOTE COVERED!");
-      lastRecordedTime = millis();
-    }
-    falsefy();
-  } else if (h1 && h2 && h3 && !h4 && !h5 && !h6 && !h7) {
-    G = true;
-    sine.play(783, amp);
-    if (millis()-lastRecordedTime>interval) {
-      sine.stop();
-      score();
-      println("G NOTE COVERED!");
-      lastRecordedTime = millis();
-    }
-    falsefy();
-  } else if (h1 && h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
-    A = true;
-    sine.play(880, amp);
-    if (millis()-lastRecordedTime>interval) {
-      sine.stop();
-      score();
-      println("A NOTE COVERED!");
-      lastRecordedTime = millis();
-    }
-    falsefy();
-  } else if (h1 && !h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
-    B = true;
-    sine.play(987, amp);
-    if (millis()-lastRecordedTime>interval) {
-      sine.stop();
-      score();
-      println("B NOTE COVERED!");
-      lastRecordedTime = millis();
-    }
-    falsefy();
-  } else {
-    C = false;
-    D = false;
-    E = false;
-    F = false;
-    G = false;
-    A = false;
-    B = false;
-  }
-  /*
-  if (C && receivedNote == 'C') {
-   points++;
-   println("C NOTE COVERED!");
-   } else if (D && receivedNote == 'D') {
-   println("D NOTE COVERED!");
-   points++;
-   } else if (E && receivedNote == 'E') {
-   println("E NOTE COVERED!");
-   points++;
-   } else if (F && receivedNote == 'F') {
-   println("F NOTE COVERED!");
-   points++;
-   } else if (G && receivedNote == 'G') {
-   println("G NOTE COVERED!");
-   points++;
-   } else if (A && receivedNote == 'A') {
-   println("A NOTE COVERED!");
-   points++;
-   } else if (B && receivedNote == 'B') {
-   println("B NOTE COVERED!");
-   points++;
-   }
-   */
-}
-
-void score() {
-  points++;
-  addOnce = false;
-}
-
-void falsefy() {
-  h1 = false;
-  h2 = false;
-  h3 = false;
-  h4 = false;
-  h5 = false;
-  h6 = false;
-  h7 = false;
-}

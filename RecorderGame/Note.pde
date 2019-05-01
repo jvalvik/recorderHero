@@ -2,8 +2,8 @@ class Note
 {
   int _x;
   int _y;
-  int _freq;
-  float _amp;
+  //int _freq;
+  //float _amp;
   int r = 25;  //radius
   int _red;
   int _green;
