@@ -1,7 +1,7 @@
 import processing.serial.*;
 import processing.sound.*;
 SinOsc sine;
-float amp = 0.5;
+float amp = 1;
 int freq;
 
 Button stopbutton;
@@ -14,11 +14,12 @@ Button speedShow;
 boolean start = true;
 boolean stop = false;
 
-int interval = 80;
 int lastRecordedTime = 0;
 
+int pointInterval = 100;
+int lastPointTime = 0;
+
 PImage img;
-Note c;
 int speed = 1;
 int bpm;
 
@@ -43,11 +44,8 @@ int elapsedTimeSound;
 int lastTimeSound;
 int soundArrIndex;
 
-
 float moveSpeed = 5;
-
 float songSpeed = 1; // Variable that should help scale the speed of bars and notes. 1 = 100% speed, 0.5 = 200%, 2 = 50% speed.
-float soundSpeed = (songSpeed/2)*0.98;
 
 boolean bar1 = false;
 boolean bar2 = false;
@@ -135,7 +133,7 @@ void setup() {
   printArray(Serial.list()); // Prints available COMs
   background(255);
   img = loadImage("recorder3_0.jpg");
-  sine = new SinOsc(this); 
+  sine = new SinOsc(this);
   line1 = new barLine((1014/5)*5, 250, (1014/5)*5, 750);
   line2 = new barLine((1014/5)*5, 250, (1014/5)*5, 750);
   line3 = new barLine((1014/5)*5, 250, (1014/5)*5, 750);
@@ -158,111 +156,114 @@ void setup() {
   increaseSpeed = new Button(400, 100, 300, 100, "Increase Speed", 255, 255, 255);
 
 
-  /*String portName = Serial.list()[1]; // assigns bluetooth COM to portName
-   myPort = new Serial(this, portName, 115200);*/
+  String portName = Serial.list()[1]; // assigns bluetooth COM to portName
+  myPort = new Serial(this, portName, 115200);
 }
 
 //-----------------------------------------------------------------------------------------------
 
 void draw() {
-  background(img); 
+  background(img);
   fill(155);
 
   pointShow = new Button(850, 200, 100, 100, str(points), 255, 255, 255);
   speedShow = new Button(350, 200, 100, 100, str(songSpeed), 255, 255, 255);
 
   if (increaseSpeed.isClicked()) {
-    songSpeed = songSpeed*2;
+    if (songSpeed < 3) {
+    songSpeed = songSpeed+0.2;
   }
+}
 
-  if (decreaseSpeed.isClicked()) {
-    songSpeed = songSpeed/2;
+if (decreaseSpeed.isClicked()) {
+  if (songSpeed > 0.20) {
+  songSpeed = songSpeed-0.1;
   }
+}
 
-  if (stopbutton.isClicked()) {
-    stop = true;
-    start = false;
-    elapsedTimeNotes = 0;
-    lastTimeNotes = millis();
-    melodyArrIndex = 0;
-    elapsedTimeSound = 0;
-    lastTimeSound = millis();
-    soundArrIndex = 0;
-    notes.removeAll(notes);
-    sine.stop();
-    points = 0;
+if (stopbutton.isClicked()) {
+  stop = true;
+  start = false;
+  elapsedTimeNotes = 0;
+  lastTimeNotes = millis();
+  melodyArrIndex = 0;
+  elapsedTimeSound = 0;
+  lastTimeSound = millis();
+  soundArrIndex = 0;
+  notes.removeAll(notes);
+  sine.stop();
+  points = 0;
+}
+
+startbutton.update();
+startbutton.render();
+stopbutton.update();
+stopbutton.render();
+increaseSpeed.render();
+increaseSpeed.update();
+decreaseSpeed.render();
+decreaseSpeed.update();
+pointShow.update();
+pointShow.render();
+speedShow.update();
+speedShow.render();
+
+// These circles are made to help with collision detection of notes.
+hole1 = createShape(ELLIPSE, 43, 357, 22, 22);
+hole1.setFill(color(100));
+hole2 = createShape(ELLIPSE, 43, 416, 22, 22);
+hole2.setFill(color(100));
+hole3 = createShape(ELLIPSE, 43, 472, 22, 22);
+hole3.setFill(color(100));
+hole4 = createShape(ELLIPSE, 43, 526, 22, 22);
+hole4.setFill(color(100));
+hole5 = createShape(ELLIPSE, 43, 580, 22, 22);
+hole5.setFill(color(100));
+hole6 = createShape(ELLIPSE, 43, 629, 22, 22);
+hole6.setFill(color(100));
+hole7 = createShape(ELLIPSE, 43, 695, 22, 22);
+hole7.setFill(color(100));
+shape(hole1);      // Draws the holes
+shape(hole2);
+shape(hole3);
+shape(hole4);
+shape(hole5);
+shape(hole6);
+shape(hole7);
+
+//Functions for spawning bar indicators.
+//showBarLines();
+//barTrigger();
+
+//Functions for spawning notes.
+//println(points);
+
+if (startbutton.isClicked()) {
+  start = true;
+  stop = false;
+}
+
+if (start == true) {
+  noteTrigger();
+  for (Note n : notes) {
+    n.script();
+    noteCheck();
   }
-
-  startbutton.update();
-  startbutton.render();
-  stopbutton.update();
-  stopbutton.render();
-  increaseSpeed.render();
-  increaseSpeed.update();
-  decreaseSpeed.render();
-  decreaseSpeed.update();
-  pointShow.update();
-  pointShow.render();
-  speedShow.update();
-  speedShow.render();
-
-  // These circles are made to help with collision detection of notes.
-  hole1 = createShape(ELLIPSE, 43, 357, 22, 22);
-  hole1.setFill(color(100));
-  hole2 = createShape(ELLIPSE, 43, 416, 22, 22);
-  hole2.setFill(color(100));
-  hole3 = createShape(ELLIPSE, 43, 472, 22, 22);
-  hole3.setFill(color(100));
-  hole4 = createShape(ELLIPSE, 43, 526, 22, 22);
-  hole4.setFill(color(100));
-  hole5 = createShape(ELLIPSE, 43, 580, 22, 22);
-  hole5.setFill(color(100));
-  hole6 = createShape(ELLIPSE, 43, 629, 22, 22);
-  hole6.setFill(color(100));
-  hole7 = createShape(ELLIPSE, 43, 695, 22, 22);
-  hole7.setFill(color(100));
-  shape(hole1);      // Draws the holes
-  shape(hole2);
-  shape(hole3);
-  shape(hole4);
-  shape(hole5);
-  shape(hole6);
-  shape(hole7);
-
-  //Functions for spawning bar indicators.
-  //showBarLines();
-  //barTrigger();
-
-  //Functions for spawning notes.
-  //println(points);
-
-  if (startbutton.isClicked()) {
-    start = true;
-    stop = false;
-  }
-
-  if (start == true) {
-    noteTrigger();
-    //soundTrigger();
-    for (Note n : notes) {
-      n.script();
-      noteCheck();
-    }
-  }
+}
 }
 
 //-----------------------------------------------------------------------------------------------
 // ----- METHODS -------
 //-----------------------------------------------------------------------------------------------
 
-// Function that triggers every bar (2400 milliseconds at 100% speed). 
+// Function that triggers every bar (2400 milliseconds at 100% speed).
 // Twinkle Twinkle is at 100 BPM. One bar consists of 4 beats. 1 beat = 60.000/BPM (600ms in our case)
 // The switch goes increments every bar and controls which bar is being spawned. Goes 1-5, 1-5, 1-5 forever.
 
 /*
 void barTrigger() {
  elapsedTime = millis() - lastTime;
- // 
+ //
  if (elapsedTime >= 2400 * songSpeed) {
  println("Spawning bar " + switchNum + "BAR TIMING: " + elapsedTime);
  lastTime = millis();
@@ -339,12 +340,12 @@ void barTrigger() {
  }
  */
 
-// Triggers a note after 2.4 sec, every beat (600 ms). 
+// Triggers a note after 2.4 sec, every beat (600 ms).
 void noteTrigger() {
   if (millis() >= 2400 && melodyArrIndex < melody.length) {
 
     elapsedTimeNotes = millis() - lastTimeNotes;
-    // 
+    //
     if (elapsedTimeNotes >= 600 / songSpeed) {
       //println("ELAPSED TIME: " + elapsedTime);
       lastTimeNotes = millis();
@@ -393,52 +394,6 @@ void noteTrigger() {
   }
 }
 
-/*
-void soundTrigger() {
- if (millis() >= 5800 && soundArrIndex < sound.length) {
- 
- elapsedTimeSound = millis() - lastTimeSound;
- // 
- if (elapsedTimeSound >= 600 * soundSpeed) {
- lastTimeSound = millis();
- switch(sound[soundArrIndex]) {
- case 523:
- sine.play(523, amp);
- soundArrIndex++;
- break;
- case 587:
- sine.play(587, amp);
- soundArrIndex++;
- break;
- case 659:
- sine.play(659, amp);
- soundArrIndex++;
- break;
- case 698:
- sine.play(698, amp);
- soundArrIndex++;
- break;
- case 783:
- sine.play(783, amp);
- soundArrIndex++;
- break;
- case 880:
- sine.play(880, amp);
- soundArrIndex++;
- break;
- case 987:
- sine.play(987, amp);
- soundArrIndex++;
- break;
- case 0:
- sine.stop();
- soundArrIndex++;
- break;
- }
- }
- }
- }
- */
 
 void C() {
   notes.add(new Note(1053, 357, 0, 255, 0));
@@ -501,120 +456,81 @@ void B() {
 
 void noteCheck() {
 
-  /*if (myPort.available() > 0) {  // If data is available,
-   receivedNote = myPort.readChar();         // read it and store it in val
-   //if (receivedNote != 'N')
-   //println(receivedNote);
-   }*/
+  if (myPort.available() > 0) {  // If data is available,
+    receivedNote = myPort.readChar();         // read it and store it in val
+    //if (receivedNote != 'N')
+    //println(receivedNote);
 
-  if (h1 && h2 && h3 && h4 && h5 && h6 && h7) {
-    C = true;
-    sine.play(523, amp);
-    if (millis()-lastRecordedTime>interval) {
-      sine.stop();
-      score();
-      println("C NOTE COVERED!");
-      lastRecordedTime = millis();
+    if (h1 && h2 && h3 && h4 && h5 && h6 && h7) {
+      C = true;
+      sine.play(523, amp);
+      falsefy();
+    } else if (h1 && h2 && h3 && h4 && h5 && h6 && !h7) {
+      D = true;
+      sine.play(587, amp);
+      falsefy();
+    } else if (h1 && h2 && h3 && h4 && h5 && !h6 && !h7) {
+      E = true;
+      sine.play(659, amp);
+      falsefy();
+    } else if (h1 && h2 && h3 && h4 && !h5 && h6 && h7) {
+      F = true;
+      sine.play(698, amp);
+      falsefy();
+    } else if (h1 && h2 && h3 && !h4 && !h5 && !h6 && !h7) {
+      G = true;
+      sine.play(783, amp);
+      falsefy();
+    } else if (h1 && h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
+      A = true;
+      sine.play(880, amp);
+      falsefy();
+    } else if (h1 && !h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
+      B = true;
+      sine.play(987, amp);
+      falsefy();
+    } else {
+      C = false;
+      D = false;
+      E = false;
+      F = false;
+      G = false;
+      A = false;
+      B = false;
+      sineStop();
     }
-    falsefy();
-  } else if (h1 && h2 && h3 && h4 && h5 && h6 && !h7) {
-    D = true;
-    sine.play(587, amp);
-    if (millis()-lastRecordedTime>interval) {
-      sine.stop();
+
+    if (C && receivedNote == 'C') {
       score();
-      println("D NOTE COVERED!");
-      lastRecordedTime = millis();
-    }
-    falsefy();
-  } else if (h1 && h2 && h3 && h4 && h5 && !h6 && !h7) {
-    E = true;
-    sine.play(659, amp);
-    if (millis()-lastRecordedTime>interval) {
-      sine.stop();
+    } else if (D && receivedNote == 'D') {
       score();
-      println("E NOTE COVERED!");
-      lastRecordedTime = millis();
-    }
-    falsefy();
-  } else if (h1 && h2 && h3 && h4 && !h5 && h6 && h7) {
-    F = true;
-    sine.play(698, amp);
-    if (millis()-lastRecordedTime>interval) {
-      sine.stop();
+    } else if (E && receivedNote == 'E') {
       score();
-      println("F NOTE COVERED!");
-      lastRecordedTime = millis();
-    }
-    falsefy();
-  } else if (h1 && h2 && h3 && !h4 && !h5 && !h6 && !h7) {
-    G = true;
-    sine.play(783, amp);
-    if (millis()-lastRecordedTime>interval) {
-      sine.stop();
+    } else if (F && receivedNote == 'F') {
       score();
-      println("G NOTE COVERED!");
-      lastRecordedTime = millis();
-    }
-    falsefy();
-  } else if (h1 && h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
-    A = true;
-    sine.play(880, amp);
-    if (millis()-lastRecordedTime>interval) {
-      sine.stop();
+    } else if (G && receivedNote == 'G') {
       score();
-      println("A NOTE COVERED!");
-      lastRecordedTime = millis();
-    }
-    falsefy();
-  } else if (h1 && !h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
-    B = true;
-    sine.play(987, amp);
-    if (millis()-lastRecordedTime>interval) {
-      sine.stop();
+    } else if (A && receivedNote == 'A') {
       score();
-      println("B NOTE COVERED!");
-      lastRecordedTime = millis();
+    } else if (B && receivedNote == 'B') {
+      score();
     }
-    falsefy();
-  } else {
-    C = false;
-    D = false;
-    E = false;
-    F = false;
-    G = false;
-    A = false;
-    B = false;
   }
-  /*
-  if (C && receivedNote == 'C') {
-   points++;
-   println("C NOTE COVERED!");
-   } else if (D && receivedNote == 'D') {
-   println("D NOTE COVERED!");
-   points++;
-   } else if (E && receivedNote == 'E') {
-   println("E NOTE COVERED!");
-   points++;
-   } else if (F && receivedNote == 'F') {
-   println("F NOTE COVERED!");
-   points++;
-   } else if (G && receivedNote == 'G') {
-   println("G NOTE COVERED!");
-   points++;
-   } else if (A && receivedNote == 'A') {
-   println("A NOTE COVERED!");
-   points++;
-   } else if (B && receivedNote == 'B') {
-   println("B NOTE COVERED!");
-   points++;
-   }
-   */
 }
 
 void score() {
-  points++;
-  addOnce = false;
+  if (millis()-lastPointTime>pointInterval) {
+    points++;
+    addOnce = false;
+  }
+  lastPointTime = millis();
+}
+
+void sineStop() {
+  if (millis()-lastRecordedTime>elapsedTimeNotes) {
+    sine.stop();
+    lastRecordedTime = millis();
+  }
 }
 
 void falsefy() {
