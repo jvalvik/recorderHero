@@ -14,10 +14,13 @@ Button speedShow;
 boolean start = true;
 boolean stop = false;
 
+<<<<<<< HEAD
 int noteTrailWidth = 35;
 int noteTrailHeight = 15;
 int noteTrailRadii = 7;
 
+=======
+>>>>>>> 90be67fe3c22368c51da63883a4467a9cfab5947
 int lastRecordedTime = 0;
 
 int pointInterval = 100;
@@ -173,7 +176,10 @@ void setup() {
   background(255);
   img = loadImage("recorder3_0.jpg");
   sine = new SinOsc(this);
+<<<<<<< HEAD
   rectMode(CORNER);
+=======
+>>>>>>> 90be67fe3c22368c51da63883a4467a9cfab5947
   line1 = new barLine((1014/5)*5, 250, (1014/5)*5, 750);
   line2 = new barLine((1014/5)*5, 250, (1014/5)*5, 750);
   line3 = new barLine((1014/5)*5, 250, (1014/5)*5, 750);
@@ -211,16 +217,29 @@ void draw() {
 
   if (increaseSpeed.isClicked()) {
     if (songSpeed < 3) {
+<<<<<<< HEAD
       songSpeed = songSpeed+0.2;
     }
+=======
+    songSpeed = songSpeed+0.2;
+>>>>>>> 90be67fe3c22368c51da63883a4467a9cfab5947
   }
+}
 
+<<<<<<< HEAD
   if (decreaseSpeed.isClicked()) {
     if (songSpeed > 0.20) {
       songSpeed = songSpeed-0.1;
     }
+=======
+if (decreaseSpeed.isClicked()) {
+  if (songSpeed > 0.20) {
+  songSpeed = songSpeed-0.1;
+>>>>>>> 90be67fe3c22368c51da63883a4467a9cfab5947
   }
+}
 
+<<<<<<< HEAD
   if (stopbutton.isClicked()) {
     stop = true;
     start = false;
@@ -235,55 +254,71 @@ void draw() {
     sine.stop();
     points = 0;
   }
+=======
+if (stopbutton.isClicked()) {
+  stop = true;
+  start = false;
+  elapsedTimeNotes = 0;
+  lastTimeNotes = millis();
+  melodyArrIndex = 0;
+  elapsedTimeSound = 0;
+  lastTimeSound = millis();
+  soundArrIndex = 0;
+  notes.removeAll(notes);
+  sine.stop();
+  points = 0;
+}
+>>>>>>> 90be67fe3c22368c51da63883a4467a9cfab5947
 
-  startbutton.update();
-  startbutton.render();
-  stopbutton.update();
-  stopbutton.render();
-  increaseSpeed.render();
-  increaseSpeed.update();
-  decreaseSpeed.render();
-  decreaseSpeed.update();
-  pointShow.update();
-  pointShow.render();
-  speedShow.update();
-  speedShow.render();
+startbutton.update();
+startbutton.render();
+stopbutton.update();
+stopbutton.render();
+increaseSpeed.render();
+increaseSpeed.update();
+decreaseSpeed.render();
+decreaseSpeed.update();
+pointShow.update();
+pointShow.render();
+speedShow.update();
+speedShow.render();
 
-  // These circles are made to help with collision detection of notes.
-  hole1 = createShape(ELLIPSE, 43, 357, 22, 22);
-  hole1.setFill(color(100));
-  hole2 = createShape(ELLIPSE, 43, 416, 22, 22);
-  hole2.setFill(color(100));
-  hole3 = createShape(ELLIPSE, 43, 472, 22, 22);
-  hole3.setFill(color(100));
-  hole4 = createShape(ELLIPSE, 43, 526, 22, 22);
-  hole4.setFill(color(100));
-  hole5 = createShape(ELLIPSE, 43, 580, 22, 22);
-  hole5.setFill(color(100));
-  hole6 = createShape(ELLIPSE, 43, 629, 22, 22);
-  hole6.setFill(color(100));
-  hole7 = createShape(ELLIPSE, 43, 695, 22, 22);
-  hole7.setFill(color(100));
-  shape(hole1);      // Draws the holes
-  shape(hole2);
-  shape(hole3);
-  shape(hole4);
-  shape(hole5);
-  shape(hole6);
-  shape(hole7);
+// These circles are made to help with collision detection of notes.
+hole1 = createShape(ELLIPSE, 43, 357, 22, 22);
+hole1.setFill(color(100));
+hole2 = createShape(ELLIPSE, 43, 416, 22, 22);
+hole2.setFill(color(100));
+hole3 = createShape(ELLIPSE, 43, 472, 22, 22);
+hole3.setFill(color(100));
+hole4 = createShape(ELLIPSE, 43, 526, 22, 22);
+hole4.setFill(color(100));
+hole5 = createShape(ELLIPSE, 43, 580, 22, 22);
+hole5.setFill(color(100));
+hole6 = createShape(ELLIPSE, 43, 629, 22, 22);
+hole6.setFill(color(100));
+hole7 = createShape(ELLIPSE, 43, 695, 22, 22);
+hole7.setFill(color(100));
+shape(hole1);      // Draws the holes
+shape(hole2);
+shape(hole3);
+shape(hole4);
+shape(hole5);
+shape(hole6);
+shape(hole7);
 
-  //Functions for spawning bar indicators.
-  //showBarLines();
-  //barTrigger();
+//Functions for spawning bar indicators.
+//showBarLines();
+//barTrigger();
 
-  //Functions for spawning notes.
-  //println(points);
+//Functions for spawning notes.
+//println(points);
 
-  if (startbutton.isClicked()) {
-    start = true;
-    stop = false;
-  }
+if (startbutton.isClicked()) {
+  start = true;
+  stop = false;
+}
 
+<<<<<<< HEAD
   if (start == true) {
     noteTrigger();
     for (noteTrail n : noteTrails) {
@@ -293,13 +328,108 @@ void draw() {
       n.script();
       noteCheck();
     }
+=======
+if (start == true) {
+  noteTrigger();
+  for (Note n : notes) {
+    n.script();
+    noteCheck();
+>>>>>>> 90be67fe3c22368c51da63883a4467a9cfab5947
   }
+}
 }
 
 //-----------------------------------------------------------------------------------------------
 // ----- METHODS -------
 //-----------------------------------------------------------------------------------------------
 
+<<<<<<< HEAD
+=======
+// Function that triggers every bar (2400 milliseconds at 100% speed).
+// Twinkle Twinkle is at 100 BPM. One bar consists of 4 beats. 1 beat = 60.000/BPM (600ms in our case)
+// The switch goes increments every bar and controls which bar is being spawned. Goes 1-5, 1-5, 1-5 forever.
+
+/*
+void barTrigger() {
+ elapsedTime = millis() - lastTime;
+ //
+ if (elapsedTime >= 2400 * songSpeed) {
+ println("Spawning bar " + switchNum + "BAR TIMING: " + elapsedTime);
+ lastTime = millis();
+ switch(switchNum) {
+ case 1:
+ line1.resetBar();
+ bar1 = true;
+ switchNum++;
+ break;
+ case 2:
+ line2.resetBar();
+ bar2 = true;
+ switchNum++;
+ break;
+ case 3:
+ line3.resetBar();
+ bar3 = true;
+ switchNum++;
+ break;
+ case 4:
+ line4.resetBar();
+ bar4 = true;
+ switchNum++;
+ break;
+ case 5:
+ line5.resetBar();
+ bar5 = true;
+ switchNum++;
+ break;
+ case 6:
+ line6.resetBar();
+ bar6 = true;
+ switchNum++;
+ break;
+ case 7:
+ line7.resetBar();
+ bar7 = true;
+ switchNum = 1;
+ break;
+ }
+ }
+ }
+ 
+ // Function that displays bar objects (vertical line shapes) from the barLine class. Is dependant on the booleans controlled in barTrigger().
+ void showBarLines() {
+ if (bar1) {
+ line1.display();
+ line1.move(moveSpeed);
+ }
+ if (bar2) {
+ line2.display();
+ line2.move(moveSpeed);
+ }
+ if (bar3) {
+ line3.display();
+ line3.move(moveSpeed);
+ }
+ if (bar4) {
+ line4.display();
+ line4.move(moveSpeed);
+ }
+ if (bar5) {
+ line5.display();
+ line5.move(moveSpeed);
+ }
+ if (bar6) {
+ line6.display();
+ line6.move(moveSpeed);
+ }
+ if (bar7) {
+ line7.display();
+ line7.move(moveSpeed);
+ }
+ }
+ */
+
+>>>>>>> 90be67fe3c22368c51da63883a4467a9cfab5947
 // Triggers a note after 2.4 sec, every beat (600 ms).
 void noteTrigger() {
   if (millis() >= 2400 && melodyArrIndex < melody.length) {
@@ -501,7 +631,11 @@ void noteCheck() {
       G = false;
       A = false;
       B = false;
+<<<<<<< HEAD
       //sineStop();
+=======
+      sineStop();
+>>>>>>> 90be67fe3c22368c51da63883a4467a9cfab5947
     }
 
     if (C && receivedNote == 'C') {
