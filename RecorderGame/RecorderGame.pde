@@ -161,7 +161,6 @@ final static ArrayList<noteTrail> noteTrails = new ArrayList();
 
 final static ArrayList<barLine> bars = new ArrayList();
 
-//final static ArrayList<Note> endedNotes = new ArrayList();
 
 
 //-----------------------------------------------------------------------------------------------
@@ -356,6 +355,7 @@ void noteTrigger() {
 
 
 void C() {
+  
   notes.add(new Note(1053, 357, 0, 255, 0));
   notes.add(new Note(1053, 416, 0, 255, 0));
   notes.add(new Note(1053, 472, 0, 255, 0));

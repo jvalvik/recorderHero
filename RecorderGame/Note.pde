@@ -10,6 +10,7 @@ class Note
   int _blue;
   float speed = 5;
   float directionX = -1;
+  char _noteLetter;
 
   Note(int x, int y, int red, int green, int blue) {
     _x = x;
@@ -19,11 +20,28 @@ class Note
     _blue = blue;
   }  
 
+  Note(char noteLetter, int x, int y, int red, int green, int blue) {
+    _x = x;
+    _y = y;
+    _red = red;
+    _green = green;
+    _blue = blue;
+    _noteLetter = noteLetter;
+  }
+
   void display() {
     if (_x > 43) {
       noStroke();
       fill(_red, _green, _blue);
       ellipse(_x, _y, r, r);
+    }
+  }
+
+  void displayLetter() {
+    if (_x > 43) {
+      noStroke();
+      fill(_red, _green, _blue);
+      text(_noteLetter, _x, _y);
     }
   }
 
