@@ -7,8 +7,10 @@ int freq;
 Button stopbutton;
 Button startbutton;
 Button pointShow;
-Button increaseSpeed;
-Button decreaseSpeed;
+Button speed25;
+Button speed50;
+Button speed75;
+Button speed100;
 Button speedShow;
 
 boolean start = true;
@@ -191,8 +193,10 @@ void setup() {
 
   stopbutton = new Button(800, 100, 100, 100, "Stop", 255, 255, 255);
   startbutton = new Button(900, 100, 100, 100, "Start", 255, 255, 255);
-  decreaseSpeed = new Button(100, 100, 300, 100, "Decrease Speed", 255, 255, 255);
-  increaseSpeed = new Button(400, 100, 300, 100, "Increase Speed", 255, 255, 255);
+  speed25 = new Button(100, 0, 300, 100, "0.25 % speed", 255, 255, 255);
+  speed50 = new Button(400, 0, 300, 100, "0.50 % speed", 255, 255, 255);
+  speed75 = new Button(100, 100, 300, 100, "0.75 % speed", 255, 255, 255);
+  speed100 = new Button(400, 100, 300, 100, "Normal speed", 255, 255, 255);
 
 
   String portName = Serial.list()[1]; // assigns bluetooth COM to portName
@@ -208,16 +212,14 @@ void draw() {
   pointShow = new Button(850, 200, 100, 100, str(points), 255, 255, 255);
   speedShow = new Button(350, 200, 100, 100, str(songSpeed), 255, 255, 255);
 
-  if (increaseSpeed.isClicked()) {
-    if (songSpeed < 3) {
-      songSpeed = songSpeed+0.2;
-    }
-  }
-
-  if (decreaseSpeed.isClicked()) {
-    if (songSpeed > 0.20) {
-      songSpeed = songSpeed-0.1;
-    }
+  if (speed25.isClicked()) {
+    songSpeed = 0.25;
+  } else if (speed50.isClicked()) {
+    songSpeed = 0.50;
+  } else if (speed75.isClicked()) {
+    songSpeed = 0.75;
+  } else if (speed100.isClicked()) {
+    songSpeed = 1;
   }
 
   if (stopbutton.isClicked()) {
@@ -239,10 +241,14 @@ void draw() {
   startbutton.render();
   stopbutton.update();
   stopbutton.render();
-  increaseSpeed.render();
-  increaseSpeed.update();
-  decreaseSpeed.render();
-  decreaseSpeed.update();
+  speed25.render();
+  speed25.update();
+  speed50.render();
+  speed50.update();
+  speed75.render();
+  speed75.update();
+  speed100.render();
+  speed100.update();
   pointShow.update();
   pointShow.render();
   speedShow.update();
@@ -355,7 +361,7 @@ void noteTrigger() {
 
 
 void C() {
-  
+
   notes.add(new Note(1053, 357, 0, 255, 0));
   notes.add(new Note(1053, 416, 0, 255, 0));
   notes.add(new Note(1053, 472, 0, 255, 0));
@@ -611,7 +617,7 @@ void barTrigger() {
  }
  }
  }
- /*
+/*
  // Function that displays bar objects (vertical line shapes) from the barLine class. Is dependant on the booleans controlled in barTrigger().
  void showBarLines() {
  if (bar1) {
