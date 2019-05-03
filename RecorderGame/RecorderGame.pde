@@ -189,7 +189,7 @@ void setup() {
   size(1057, 816);
   printArray(Serial.list()); // Prints available COMs
   background(255);
-  img = loadImage("recorder3_0.jpg");
+  img = loadImage("recorder4_0.jpg");
   sine = new SinOsc(this);
   rectMode(CORNER);
   line1 = new barLine((1014/5)*5, 250, (1014/5)*5, 750);
@@ -295,6 +295,8 @@ void draw() {
   shape(hole5);
   shape(hole6);
   shape(hole7);
+  
+  pitch(frequency);
 
   //Functions for spawning bar indicators.
   //showBarLines();
@@ -557,6 +559,18 @@ void noteCheck() {
     }
   }
 }
+
+void pitch(int freq) {
+  freq = freq - 350;
+  if (freq > 125 && freq < 680) {
+    ellipse(freq,771,15,15);
+  } else if (freq < 150) {
+    ellipse(125,771,15,15);
+  } else if (freq > 680) {
+    ellipse(680,771,15,15);
+  }
+}
+
 
 void score() {
   if (millis()-lastPointTime>pointInterval) {
