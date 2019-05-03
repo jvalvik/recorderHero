@@ -361,7 +361,7 @@ void noteTrigger() {
 
 
 void C() {
-
+  notes.add(new Note('C', 1053, 300, 0, 255, 0));
   notes.add(new Note(1053, 357, 0, 255, 0));
   notes.add(new Note(1053, 416, 0, 255, 0));
   notes.add(new Note(1053, 472, 0, 255, 0));
@@ -382,6 +382,7 @@ void C() {
 }
 
 void D() {
+  notes.add(new Note('D', 1053, 300, 255, 0, 0));
   notes.add(new Note(1053, 357, 255, 0, 0));
   notes.add(new Note(1053, 416, 255, 0, 0));
   notes.add(new Note(1053, 472, 255, 0, 0));
@@ -400,6 +401,7 @@ void D() {
 }
 
 void E() {
+  notes.add(new Note('C', 1053, 300, 255, 255, 0));
   notes.add(new Note(1053, 357, 255, 255, 0));
   notes.add(new Note(1053, 416, 255, 255, 0));
   notes.add(new Note(1053, 472, 255, 255, 0));
@@ -416,6 +418,7 @@ void E() {
 }
 
 void F() {
+  notes.add(new Note('F', 1053, 300, 0, 0, 255));
   notes.add(new Note(1053, 357, 0, 0, 255));
   notes.add(new Note(1053, 416, 0, 0, 255));
   notes.add(new Note(1053, 472, 0, 0, 255));
@@ -434,6 +437,7 @@ void F() {
 }
 
 void G() {
+  notes.add(new Note('G', 1053, 300, 255, 125, 0));
   notes.add(new Note(1053, 357, 255, 125, 0));
   notes.add(new Note(1053, 416, 255, 125, 0));
   notes.add(new Note(1053, 472, 255, 125, 0));
@@ -446,6 +450,7 @@ void G() {
 }
 
 void A() {
+  notes.add(new Note('A', 1053, 300, 0, 255, 255));
   notes.add(new Note(1053, 357, 0, 255, 255));
   notes.add(new Note(1053, 416, 0, 255, 255));
   for (int i=1053; i<1053+(35*noteTrail[melodyArrIndex]); i+=noteTrailWidth-5) {
@@ -456,6 +461,7 @@ void A() {
 }
 
 void B() {
+  notes.add(new Note('B', 1053, 300, 255, 0, 125));
   notes.add(new Note(1053, 357, 255, 0, 125));
   for (int i=1053; i<1053+(35*noteTrail[melodyArrIndex]); i+=noteTrailWidth-5) {
     noteTrails.add(new noteTrail(i, 349, noteTrailWidth, noteTrailHeight, noteTrailRadii, 255, 0, 125));

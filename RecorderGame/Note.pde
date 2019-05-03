@@ -51,7 +51,11 @@ class Note
   }
 
   void script() {
-    display();
+    if (_noteLetter == '\u0000') {
+      display();
+    } else if (_noteLetter != '\u0000') {
+      displayLetter();
+    }
     move(moveSpeed);
     collision();
   }
