@@ -587,12 +587,17 @@ void noteCheck() {
 }
 
 void pitch(int freq) {
-  freq = freq - 350;
-  if (freq > 125 && freq < 680) {
-    ellipse(freq,771,15,15);
-  } else if (freq < 150) {
+  int average = 0;
+  for (int i = 0; i < 5; i++) {
+    average = average + freq;
+  }
+  average = average/5;
+  average = average - 350;
+  if (average > 125 && average < 680) {
+    ellipse(average,771,15,15);
+  } else if (average < 150) {
     ellipse(125,771,15,15);
-  } else if (freq > 680) {
+  } else if (average > 680) {
     ellipse(680,771,15,15);
   }
 }
