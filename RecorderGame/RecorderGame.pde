@@ -32,6 +32,9 @@ int bpm;
 // Variables for receiving data via Bluetooth
 Serial myPort;  // Create object from Serial class
 char receivedNote;      // Data received from the serial port
+Serial pitchPort;
+String frequencyString;
+int frequency;
 
 boolean addOnce = false;
 int points = 0;
@@ -95,7 +98,7 @@ boolean G = false;
 boolean A = false;
 boolean B = false;
 
-String[] melody = {
+/*String[] melody = {
   "C", "C", "G", "G", 
   "A", "A", "G", "PAUSE", 
   "F", "F", "E", "E", 
@@ -107,10 +110,10 @@ String[] melody = {
   "C", "C", "G", "G", 
   "A", "A", "G", "PAUSE", 
   "F", "F", "E", "E", 
-  "D", "D", "C", "PAUSE"};
+  "D", "D", "C", "PAUSE"};*/
 
 // Trail length in beats (quarternotes)
-int[] noteTrail = {
+/*int[] noteTrail = {
   4, 4, 4, 4, 
   4, 4, 8, 0, 
   4, 4, 3, 4, 
@@ -123,9 +126,24 @@ int[] noteTrail = {
   4, 4, 8, 0, 
   4, 4, 4, 4, 
   4, 4, 8, 0};
+*/
+
+// Trail length in beats (quarternotes)
+int[] noteTrail = {
+  4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0,
+  4, 0, 0, 0, 4, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0,
+  4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0,
+  4, 0, 0, 0, 4, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0,
+  4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0,
+  4, 0, 0, 0, 4, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0,
+  4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0,
+  4, 0, 0, 0, 4, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0,
+  4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0,
+  4, 0, 0, 0, 4, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0,
+  4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0,
+  4, 0, 0, 0, 4, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0,};
 
 
-/*
 String[] melody = {
  "C", "", "", "", "C", "", "", "", "G", "", "", "", "G", "", "", "", 
  "A", "", "", "", "A", "", "", "", "G", "", "", "", "", "", "", "", 
@@ -139,7 +157,6 @@ String[] melody = {
  "A", "", "", "", "A", "", "", "", "G", "", "", "", "", "", "", "", 
  "F", "", "", "", "F", "", "", "", "E", "", "", "", "E", "", "", "", 
  "D", "", "", "", "D", "", "", "", "C", "", "", "", "", "", "", "", };
- */
 
 
 int[] sound = {
@@ -199,8 +216,10 @@ void setup() {
   speed100 = new Button(400, 100, 300, 100, "Normal speed", 255, 255, 255);
 
 
-  String portName = Serial.list()[1]; // assigns bluetooth COM to portName
+  String portName = Serial.list()[3]; // assigns bluetooth COM to portName
   myPort = new Serial(this, portName, 115200);
+  String portNamePitch = Serial.list()[1];
+  pitchPort = new Serial(this,portNamePitch,9600);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -311,7 +330,7 @@ void noteTrigger() {
 
     elapsedTimeNotes = millis() - lastTimeNotes;
     //
-    if (elapsedTimeNotes >= 600 / songSpeed) {
+    if (elapsedTimeNotes >= 150 / songSpeed) {
       //println("ELAPSED TIME: " + elapsedTime);
       lastTimeNotes = millis();
       switch(melody[melodyArrIndex]) {
@@ -350,7 +369,7 @@ void noteTrigger() {
         B();
         melodyArrIndex++;
         break;
-      case "PAUSE":
+      case "":
         //println("Spawning " + melody[melodyArrIndex] + ". Nothing on this quater note. From array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
         melodyArrIndex++;
         break;
@@ -476,6 +495,11 @@ void noteCheck() {
     receivedNote = myPort.readChar();         // read it and store it in val
     //if (receivedNote != 'N')
     //println(receivedNote);
+  if (pitchPort.available() > 0) {  // If data is available,
+    frequencyString = pitchPort.readString();         // read it and store it in val
+    frequency = int(frequencyString);
+    println("freuqency: " + frequency);
+  }
 
     if (h1 && h2 && h3 && h4 && h5 && h6 && h7) {
       C = true;
@@ -516,7 +540,7 @@ void noteCheck() {
       //sineStop();
     }
 
-    if (C && receivedNote == 'C') {
+    if (C && frequency > 515 && frequency < 550) {
       score();
     } else if (D && receivedNote == 'D') {
       score();
