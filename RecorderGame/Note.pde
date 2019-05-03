@@ -10,7 +10,7 @@ class Note
   int _blue;
   float speed = 5;
   float directionX = -1;
-  char _noteLetter;
+  String _noteLetter;
 
   Note(int x, int y, int red, int green, int blue) {
     _x = x;
@@ -20,7 +20,7 @@ class Note
     _blue = blue;
   }  
 
-  Note(char noteLetter, int x, int y, int red, int green, int blue) {
+  Note(String noteLetter, int x, int y, int red, int green, int blue) {
     _x = x;
     _y = y;
     _red = red;
@@ -51,9 +51,9 @@ class Note
   }
 
   void script() {
-    if (_noteLetter == '\u0000') {
+    if (_noteLetter == null) {
       display();
-    } else if (_noteLetter != '\u0000') {
+    } else if (_noteLetter != null) {
       displayLetter();
     }
     move(moveSpeed);

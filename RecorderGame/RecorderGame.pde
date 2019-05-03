@@ -98,65 +98,60 @@ boolean G = false;
 boolean A = false;
 boolean B = false;
 
-/*String[] melody = {
-  "C", "C", "G", "G", 
-  "A", "A", "G", "PAUSE", 
-  "F", "F", "E", "E", 
-  "D", "D", "C", "PAUSE", 
-  "G", "G", "F", "F", 
-  "E", "E", "D", "PAUSE", 
-  "G", "G", "F", "F", 
-  "E", "E", "D", "PAUSE", 
-  "C", "C", "G", "G", 
-  "A", "A", "G", "PAUSE", 
-  "F", "F", "E", "E", 
-  "D", "D", "C", "PAUSE"};*/
+String[] melodyTwinkle = {
+  "C", "", "", "", "C", "", "", "", "G", "", "", "", "G", "", "", "", 
+  "A", "", "", "", "A", "", "", "", "G", "", "", "", "", "", "", "", 
+  "F", "", "", "", "F", "", "", "", "E", "", "", "", "E", "", "", "", 
+  "D", "", "", "", "D", "", "", "", "C", "", "", "", "", "", "", "", 
+  "G", "", "", "", "G", "", "", "", "F", "", "", "", "F", "", "", "", 
+  "E", "", "", "", "E", "", "", "", "D", "", "", "", "", "", "", "", 
+  "G", "", "", "", "G", "", "", "", "F", "", "", "", "F", "", "", "", 
+  "E", "", "", "", "E", "", "", "", "D", "", "", "", "", "", "", "", 
+  "C", "", "", "", "C", "", "", "", "G", "", "", "", "G", "", "", "", 
+  "A", "", "", "", "A", "", "", "", "G", "", "", "", "", "", "", "", 
+  "F", "", "", "", "F", "", "", "", "E", "", "", "", "E", "", "", "", 
+  "D", "", "", "", "D", "", "", "", "C", "", "", "", "", "", "", "", };
 
 // Trail length in beats (quarternotes)
-/*int[] noteTrail = {
-  4, 4, 4, 4, 
-  4, 4, 8, 0, 
-  4, 4, 3, 4, 
-  4, 4, 8, 0, 
-  4, 4, 3, 4, 
-  4, 4, 8, 0, 
-  4, 4, 3, 4, 
-  4, 4, 8, 0, 
-  4, 4, 3, 4, 
-  4, 4, 8, 0, 
-  4, 4, 4, 4, 
-  4, 4, 8, 0};
-*/
+int[] noteTrailTwinkle = {
+  4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 
+  4, 0, 0, 0, 4, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 
+  4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 
+  4, 0, 0, 0, 4, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 
+  4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 
+  4, 0, 0, 0, 4, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 
+  4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 
+  4, 0, 0, 0, 4, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 
+  4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 
+  4, 0, 0, 0, 4, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 
+  4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 
+  4, 0, 0, 0, 4, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, };
+
+
+String[] melodyTitanic = {
+  "F", "", "", "F", "F", "", "F", "", "E", "", "F", "", "", "", "E", "", 
+  "E", "", "F", "", "", "", "G", "", "A", "", "", "", "G", "", "", "", 
+  "F", "", "", "F", "F", "", "F", "", "E", "", "F", "", "", "", "F", "", 
+  "C", "", "", "", "", "", "", "", "", "", "", "", "D", "", "E", "", 
+  "F", "", "", "", "", "", "", "", "G", "", "", "", "", "", "C_sharp", "", 
+  "C_sharp", "", "", "", "A_sharp", "", "A", "", "G", "", "", "", "A", "", "A_sharp", "", 
+  "A", "", "", "", "G", "", "F", "", "E", "", "F", "", "", "", "E", "", 
+  "D", "", "", "", "", "", "", "", "C", "", "", "", "", "", "", ""};
 
 // Trail length in beats (quarternotes)
-int[] noteTrail = {
-  4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0,
-  4, 0, 0, 0, 4, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0,
-  4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0,
-  4, 0, 0, 0, 4, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0,
-  4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0,
-  4, 0, 0, 0, 4, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0,
-  4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0,
-  4, 0, 0, 0, 4, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0,
-  4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0,
-  4, 0, 0, 0, 4, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0,
-  4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0, 4, 0, 0, 0,
-  4, 0, 0, 0, 4, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0,};
+int[] noteTrailTitanic = {
+  3, 0, 0, 1, 2, 0, 2, 0, 2, 0, 4, 0, 0, 0, 2, 0, 
+  2, 0, 4, 0, 0, 0, 2, 0, 4, 0, 0, 0, 4, 0, 0, 0, 
+  3, 0, 0, 1, 2, 0, 2, 0, 2, 0, 4, 0, 0, 0, 2, 0, 
+  12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 2, 0, 
+  8, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 2, 0, 
+  4, 0, 0, 0, 2, 0, 2, 0, 4, 0, 0, 0, 2, 0, 2, 0, 
+  4, 0, 0, 0, 2, 0, 2, 0, 2, 0, 4, 0, 0, 0, 2, 0, 
+  8, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0
+};
 
-
-String[] melody = {
- "C", "", "", "", "C", "", "", "", "G", "", "", "", "G", "", "", "", 
- "A", "", "", "", "A", "", "", "", "G", "", "", "", "", "", "", "", 
- "F", "", "", "", "F", "", "", "", "E", "", "", "", "E", "", "", "", 
- "D", "", "", "", "D", "", "", "", "C", "", "", "", "", "", "", "", 
- "G", "", "", "", "G", "", "", "", "F", "", "", "", "F", "", "", "", 
- "E", "", "", "", "E", "", "", "", "D", "", "", "", "", "", "", "", 
- "G", "", "", "", "G", "", "", "", "F", "", "", "", "F", "", "", "", 
- "E", "", "", "", "E", "", "", "", "D", "", "", "", "", "", "", "", 
- "C", "", "", "", "C", "", "", "", "G", "", "", "", "G", "", "", "", 
- "A", "", "", "", "A", "", "", "", "G", "", "", "", "", "", "", "", 
- "F", "", "", "", "F", "", "", "", "E", "", "", "", "E", "", "", "", 
- "D", "", "", "", "D", "", "", "", "C", "", "", "", "", "", "", "", };
+String[] melody = melodyTitanic;
+int[] noteTrail = noteTrailTitanic;
 
 
 int[] sound = {
@@ -366,9 +361,19 @@ void noteTrigger() {
         A();
         melodyArrIndex++;
         break;
+      case "A_sharp":
+        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
+        A_sharp();
+        melodyArrIndex++;
+        break;
       case "B":
         //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
         B();
+        melodyArrIndex++;
+        break;
+      case "C_sharp":
+        //println("Spawning " + melody[melodyArrIndex] + " note, from array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
+        C_sharp();
         melodyArrIndex++;
         break;
       case "":
@@ -382,7 +387,7 @@ void noteTrigger() {
 
 
 void C() {
-  notes.add(new Note('C', 1053, 300, 0, 255, 0));
+  notes.add(new Note("C", 1053, 300, 0, 255, 0));
   notes.add(new Note(1053, 357, 0, 255, 0));
   notes.add(new Note(1053, 416, 0, 255, 0));
   notes.add(new Note(1053, 472, 0, 255, 0));
@@ -403,7 +408,7 @@ void C() {
 }
 
 void D() {
-  notes.add(new Note('D', 1053, 300, 255, 0, 0));
+  notes.add(new Note("D", 1053, 300, 255, 0, 0));
   notes.add(new Note(1053, 357, 255, 0, 0));
   notes.add(new Note(1053, 416, 255, 0, 0));
   notes.add(new Note(1053, 472, 255, 0, 0));
@@ -422,7 +427,7 @@ void D() {
 }
 
 void E() {
-  notes.add(new Note('C', 1053, 300, 255, 255, 0));
+  notes.add(new Note("C", 1053, 300, 255, 255, 0));
   notes.add(new Note(1053, 357, 255, 255, 0));
   notes.add(new Note(1053, 416, 255, 255, 0));
   notes.add(new Note(1053, 472, 255, 255, 0));
@@ -439,7 +444,7 @@ void E() {
 }
 
 void F() {
-  notes.add(new Note('F', 1053, 300, 0, 0, 255));
+  notes.add(new Note("F", 1053, 300, 0, 0, 255));
   notes.add(new Note(1053, 357, 0, 0, 255));
   notes.add(new Note(1053, 416, 0, 0, 255));
   notes.add(new Note(1053, 472, 0, 0, 255));
@@ -458,7 +463,7 @@ void F() {
 }
 
 void G() {
-  notes.add(new Note('G', 1053, 300, 255, 125, 0));
+  notes.add(new Note("G", 1053, 300, 255, 125, 0));
   notes.add(new Note(1053, 357, 255, 125, 0));
   notes.add(new Note(1053, 416, 255, 125, 0));
   notes.add(new Note(1053, 472, 255, 125, 0));
@@ -471,7 +476,7 @@ void G() {
 }
 
 void A() {
-  notes.add(new Note('A', 1053, 300, 0, 255, 255));
+  notes.add(new Note("A", 1053, 300, 0, 255, 255));
   notes.add(new Note(1053, 357, 0, 255, 255));
   notes.add(new Note(1053, 416, 0, 255, 255));
   for (int i=1053; i<1053+(35*noteTrail[melodyArrIndex]); i+=noteTrailWidth-5) {
@@ -481,11 +486,32 @@ void A() {
   //println("A NOTE ADDED TO ARRAY");
 }
 
+void A_sharp() {
+  notes.add(new Note("A#", 1053, 300, 255, 0, 125));
+  notes.add(new Note(1053, 357, 255, 0, 125));
+  notes.add(new Note(1053, 472, 255, 0, 125));
+  notes.add(new Note(1053, 526, 255, 0, 125));
+  for (int i=1053; i<1053+(35*noteTrail[melodyArrIndex]); i+=noteTrailWidth-5) {
+    noteTrails.add(new noteTrail(i, 349, noteTrailWidth, noteTrailHeight, noteTrailRadii, 255, 0, 125));
+    noteTrails.add(new noteTrail(i, 464, noteTrailWidth, noteTrailHeight, noteTrailRadii, 255, 0, 125));
+    noteTrails.add(new noteTrail(i, 518, noteTrailWidth, noteTrailHeight, noteTrailRadii, 255, 0, 125));
+  }
+}
+
 void B() {
-  notes.add(new Note('B', 1053, 300, 255, 0, 125));
+  notes.add(new Note("B", 1053, 300, 255, 0, 125));
   notes.add(new Note(1053, 357, 255, 0, 125));
   for (int i=1053; i<1053+(35*noteTrail[melodyArrIndex]); i+=noteTrailWidth-5) {
     noteTrails.add(new noteTrail(i, 349, noteTrailWidth, noteTrailHeight, noteTrailRadii, 255, 0, 125));
+  }
+  //println("B NOTE ADDED TO ARRAY");
+}
+
+void C_sharp() {
+  notes.add(new Note("C#", 1053, 300, 125, 255, 0));
+  notes.add(new Note(1053, 416, 125, 255, 0));
+  for (int i=1053; i<1053+(35*noteTrail[melodyArrIndex]); i+=noteTrailWidth-5) {
+    noteTrails.add(new noteTrail(i, 408, noteTrailWidth, noteTrailHeight, noteTrailRadii, 125, 255, 0));
   }
   //println("B NOTE ADDED TO ARRAY");
 }
