@@ -53,9 +53,9 @@ int frequency;
 
 boolean addOnce = false;
 int points = 0;
-int totalPoints;
-int pitchPoints;
-int fingeringPoints;
+float totalPoints;
+float pitchPoints;
+float fingeringPoints;
 
 String speedString;
 
@@ -263,12 +263,6 @@ void setup() {
   //myPort = new Serial(this, portName, 115200);
   //String portNamePitch = Serial.list()[0];
   //pitchPort = new Serial(this, portNamePitch, 9600);
-
-  for (int i = 0; i<melody.length; i++) {
-    if (melody[i] != "") {
-      totalPoints++;
-    }
-  }
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -707,20 +701,20 @@ void resultScreen() {
   background(resultater);
   textSize(40);
   fill(0);
-  if (points >= totalPoints-5) {
+  if (points >= totalPoints*0.95) { // 95% Correct = 5 stars
     image(fiveStars, width/2-185, 500);
-  } else if (points >= totalPoints-15) {
+  } else if (points >= totalPoints*0.75) { // 75% Correct = 4 stars
     image(fourStars, width/2-185, 500);
-  } else if (points >= totalPoints-25) {
+  } else if (points >= totalPoints*0.50) { // 50% Correct = 3 stars
     image(threeStars, width/2-185, 500);
-  } else if (points >= totalPoints-35) {
+  } else if (points >= totalPoints*0.25) { // 25% Correct = 2 stars
     image(twoStars, width/2-185, 500);
-  } else if (points <= totalPoints-45) {
+  } else if (points <= totalPoints*0.10) { // 10% Correct = 1 stars
     image(oneStar, width/2-185, 500);
   }
-  text("Samlet score: " + points + "/" + totalPoints, width/2, 300);
+  text("Samlet score: " + points + "/" + int(totalPoints), width/2, 300);
   textSize(25);
-  text("Korrekte finger placeringer: " + fingeringPoints + "/" + totalPoints, width/2, 400);
+  text("Korrekte finger placeringer: " + int(fingeringPoints) + "/" + int(totalPoints), width/2, 400);
   resetbutton.update();
   resetbutton.render();
   if (resetbutton.isClicked()) {
@@ -774,6 +768,12 @@ void startScreen() {
     sine.stop();
     points = 0;
     fingeringPoints = 0;
+    totalPoints = 0;
+    for (int i = 0; i<melody.length; i++) {
+    if (melody[i] != "") {
+      totalPoints++;
+    }
+  }
   }
   if (speed25.isClicked()) {
     songSpeed = 0.25;
