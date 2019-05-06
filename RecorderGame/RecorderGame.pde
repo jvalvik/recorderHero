@@ -28,6 +28,7 @@ int lastRecordedTime = 0;
 int pointInterval = 100;
 int lastPointTime = 0;
 
+PImage startScreen;
 PImage img;
 PImage results;
 PImage resultater;
@@ -216,6 +217,7 @@ void setup() {
   size(1057, 816);
   printArray(Serial.list()); // Prints available COMs
   background(255);
+  startScreen = loadImage("startScreen.PNG");
   img = loadImage("recorder4_0.jpg");
   results = loadImage("results.png");
   resultater = loadImage("resultater.png");
@@ -728,4 +730,8 @@ void resultScreen() {
     points = 0;
     fingeringPoints = 0;
   }
+}
+
+void startScreen() {
+  background(startScreen);
 }
