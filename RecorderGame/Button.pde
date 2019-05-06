@@ -35,9 +35,15 @@ class Button {
     rect(Pos.x, Pos.y, Width, Height);
 
     fill(0);
-    noStroke();
-    textSize(32);
+    stroke(0);
+    textSize(28);
     textAlign(CENTER, CENTER);
+    if (Text == "Stop")
+      fill(255,0,0);
+    else if (Text == "Start")
+      fill(0,255,0);
+    else
+      fill(0);
     text(Text, Pos.x+(Width/2), Pos.y+(Height/2));
   }
   boolean isClicked() {

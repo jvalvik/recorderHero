@@ -39,6 +39,8 @@ int frequency;
 boolean addOnce = false;
 int points = 0;
 
+String speedString;
+
 // Variables for spawning bars.
 int elapsedTime;
 int lastTime;
@@ -163,8 +165,8 @@ int[] noteTrailTitanic = {
   12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 };
 
-String[] melody = melodyTitanic;
-int[] noteTrail = noteTrailTitanic;
+String[] melody = melodyTwinkle;
+int[] noteTrail = noteTrailTwinkle;
 
 
 int[] sound = {
@@ -216,17 +218,17 @@ void setup() {
   soundArrIndex = 0;
 
 
-  stopbutton = new Button(800, 100, 100, 100, "Stop", 255, 255, 255);
-  startbutton = new Button(900, 100, 100, 100, "Start", 255, 255, 255);
-  speed25 = new Button(100, 0, 300, 100, "0.25 % speed", 255, 255, 255);
-  speed50 = new Button(400, 0, 300, 100, "0.50 % speed", 255, 255, 255);
-  speed75 = new Button(100, 100, 300, 100, "0.75 % speed", 255, 255, 255);
-  speed100 = new Button(400, 100, 300, 100, "Normal speed", 255, 255, 255);
+  stopbutton = new Button(600, 0, 100, 100, "Stop", 255, 255, 255);
+  startbutton = new Button(700, 0, 100, 100, "Start", 255, 255, 255);
+  speed25 = new Button(100, 0, 200, 100, "25 % speed", 255, 255, 255);
+  speed50 = new Button(300, 0, 200, 100, "50 % speed", 255, 255, 255);
+  speed75 = new Button(100, 100, 200, 100, "75 % speed", 255, 255, 255);
+  speed100 = new Button(300, 100, 200, 100, "Normal speed", 255, 255, 255);
 
 
-  String portName = Serial.list()[3]; // assigns bluetooth COM to portName
+  String portName = Serial.list()[1]; // assigns bluetooth COM to portName
   myPort = new Serial(this, portName, 115200);
-  String portNamePitch = Serial.list()[1];
+  String portNamePitch = Serial.list()[0];
   pitchPort = new Serial(this,portNamePitch,9600);
 }
 
@@ -235,9 +237,18 @@ void setup() {
 void draw() {
   background(img);
   fill(155);
+  
+  if (songSpeed == 0.25)
+    speedString = "25%";
+  else if (songSpeed == 0.50)
+    speedString = "50%";
+  else if (songSpeed == 0.75)
+    speedString = "75%";
+  else if (songSpeed == 1)
+    speedString = "100%";
 
-  pointShow = new Button(850, 200, 100, 100, str(points), 255, 255, 255);
-  speedShow = new Button(350, 200, 100, 100, str(songSpeed), 255, 255, 255);
+  pointShow = new Button(600, 100, 200, 100, "Points: " + str(points), 255, 255, 255);
+  speedShow = new Button(100, 200, 400, 50, "Current Speed: " + speedString, 255, 255, 255);
 
   if (speed25.isClicked()) {
     songSpeed = 0.25;
@@ -263,11 +274,11 @@ void draw() {
     sine.stop();
     points = 0;
   }
-
-  startbutton.update();
-  startbutton.render();
+  stopbutton.render();
   stopbutton.update();
   stopbutton.render();
+  startbutton.update();
+  startbutton.render();
   speed25.render();
   speed25.update();
   speed50.render();
@@ -440,7 +451,7 @@ void D() {
 }
 
 void E() {
-  notes.add(new Note("E", 1053, 300, 255, 255, 0));
+  notes.add(new Note("E", 1053, 300, 0, 0, 0));
   notes.add(new Note(1053, 357, 255, 255, 0));
   notes.add(new Note(1053, 416, 255, 255, 0));
   notes.add(new Note(1053, 472, 255, 255, 0));
@@ -539,7 +550,7 @@ void noteCheck() {
   if (pitchPort.available() > 0) {  // If data is available,
     frequencyString = pitchPort.readString();         // read it and store it in val
     frequency = int(frequencyString);
-    println("freuqency: " + frequency);
+    println("frequency: " + frequency);
   }
 
     if (h1 && h2 && h3 && h4 && h5 && h6 && h7) {
@@ -601,10 +612,10 @@ void noteCheck() {
 
 void pitch(int freq) {
   int average = 0;
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 10; i++) {
     average = average + freq;
   }
-  average = average/5;
+  average = average/10;
   average = average - 350;
   if (average > 125 && average < 680) {
     ellipse(average,771,15,15);
