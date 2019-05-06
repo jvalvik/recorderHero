@@ -4,8 +4,11 @@ SinOsc sine;
 float amp = 1;
 int freq;
 
+
+
 Button stopbutton;
 Button startbutton;
+Button resetbutton;
 Button pointShow;
 Button speed25;
 Button speed50;
@@ -26,6 +29,14 @@ int pointInterval = 100;
 int lastPointTime = 0;
 
 PImage img;
+PImage results;
+PImage resultater;
+PImage oneStar;
+PImage twoStars;
+PImage threeStars;
+PImage fourStars;
+PImage fiveStars;
+
 int speed = 1;
 int bpm;
 
@@ -38,6 +49,9 @@ int frequency;
 
 boolean addOnce = false;
 int points = 0;
+int totalPoints;
+int pitchPoints;
+int fingeringPoints;
 
 String speedString;
 
@@ -112,7 +126,9 @@ String[] melodyTwinkle = {
   "C", "", "", "", "C", "", "", "", "G", "", "", "", "G", "", "", "", 
   "A", "", "", "", "A", "", "", "", "G", "", "", "", "", "", "", "", 
   "F", "", "", "", "F", "", "", "", "E", "", "", "", "E", "", "", "", 
-  "D", "", "", "", "D", "", "", "", "C", "", "", "", "", "", "", "", };
+  "D", "", "", "", "D", "", "", "", "C", "", "", "", "", "", "", "", 
+  "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 
+  "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", };
 
 // Trail length in beats (quarternotes)
 int[] noteTrailTwinkle = {
@@ -145,7 +161,8 @@ String[] melodyTitanic = {
   "A", "", "", "", "G", "", "F", "", "E", "", "F", "", "", "", "E", "", 
   "E", "", "F", "", "", "", "G", "", "A", "", "", "", "G", "", "", "", 
   "F", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 
-  
+  "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "", 
+
 };
 
 // Trail length in beats (quarternotes)
@@ -157,7 +174,7 @@ int[] noteTrailTitanic = {
   8, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 2, 0, 
   4, 0, 0, 0, 2, 0, 2, 0, 4, 0, 0, 0, 2, 0, 2, 0, 
   4, 0, 0, 0, 2, 0, 2, 0, 2, 0, 4, 0, 0, 0, 2, 0, 
-  8, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0,
+  8, 0, 0, 0, 0, 0, 0, 0, 8, 0, 0, 0, 0, 0, 0, 0, 
   8, 0, 0, 0, 0, 0, 0, 0, 6, 0, 0, 0, 0, 0, 2, 0, 
   4, 0, 0, 0, 2, 0, 2, 0, 4, 0, 0, 0, 2, 0, 2, 0, 
   4, 0, 0, 0, 2, 0, 2, 0, 2, 0, 4, 0, 0, 0, 2, 0, 
@@ -165,8 +182,8 @@ int[] noteTrailTitanic = {
   12, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 };
 
-String[] melody = melodyTwinkle;
-int[] noteTrail = noteTrailTwinkle;
+String[] melody = melodyTitanic;
+int[] noteTrail = noteTrailTitanic;
 
 
 int[] sound = {
@@ -200,6 +217,14 @@ void setup() {
   printArray(Serial.list()); // Prints available COMs
   background(255);
   img = loadImage("recorder4_0.jpg");
+  results = loadImage("results.png");
+  resultater = loadImage("resultater.png");
+  oneStar = loadImage("oneStar.PNG");
+  twoStars = loadImage("twoStars.PNG");
+  threeStars = loadImage("threeStars.PNG");
+  fourStars = loadImage("fourStars.PNG");
+  fiveStars = loadImage("fiveStars.PNG");
+
   sine = new SinOsc(this);
   rectMode(CORNER);
   line1 = new barLine((1014/5)*5, 250, (1014/5)*5, 750);
@@ -220,6 +245,7 @@ void setup() {
 
   stopbutton = new Button(600, 0, 100, 100, "Stop", 255, 255, 255);
   startbutton = new Button(700, 0, 100, 100, "Start", 255, 255, 255);
+  resetbutton = new Button(width/2-100, height-200, 200, 100, "Spil igen", 255, 255, 255);
   speed25 = new Button(100, 0, 200, 100, "25 % speed", 255, 255, 255);
   speed50 = new Button(300, 0, 200, 100, "50 % speed", 255, 255, 255);
   speed75 = new Button(100, 100, 200, 100, "75 % speed", 255, 255, 255);
@@ -229,114 +255,125 @@ void setup() {
   String portName = Serial.list()[1]; // assigns bluetooth COM to portName
   myPort = new Serial(this, portName, 115200);
   String portNamePitch = Serial.list()[0];
-  pitchPort = new Serial(this,portNamePitch,9600);
+  pitchPort = new Serial(this, portNamePitch, 9600);
+
+  for (int i = 0; i<melody.length; i++) {
+    if (melody[i] != "") {
+      totalPoints++;
+    }
+  }
 }
 
 //-----------------------------------------------------------------------------------------------
 
 void draw() {
-  background(img);
-  fill(155);
-  
-  if (songSpeed == 0.25)
-    speedString = "25%";
-  else if (songSpeed == 0.50)
-    speedString = "50%";
-  else if (songSpeed == 0.75)
-    speedString = "75%";
-  else if (songSpeed == 1)
-    speedString = "100%";
+  if (melodyArrIndex >= 22) {
+    resultScreen();
+  } else {
+    println(melodyArrIndex);
+    background(img);
+    fill(155);
 
-  pointShow = new Button(600, 100, 200, 100, "Points: " + str(points), 255, 255, 255);
-  speedShow = new Button(100, 200, 400, 50, "Current Speed: " + speedString, 255, 255, 255);
+    if (songSpeed == 0.25)
+      speedString = "25%";
+    else if (songSpeed == 0.50)
+      speedString = "50%";
+    else if (songSpeed == 0.75)
+      speedString = "75%";
+    else if (songSpeed == 1)
+      speedString = "100%";
 
-  if (speed25.isClicked()) {
-    songSpeed = 0.25;
-  } else if (speed50.isClicked()) {
-    songSpeed = 0.50;
-  } else if (speed75.isClicked()) {
-    songSpeed = 0.75;
-  } else if (speed100.isClicked()) {
-    songSpeed = 1;
-  }
+    pointShow = new Button(600, 100, 200, 100, "Points: " + str(points), 255, 255, 255);
+    speedShow = new Button(100, 200, 400, 50, "Current Speed: " + speedString, 255, 255, 255);
 
-  if (stopbutton.isClicked()) {
-    stop = true;
-    start = false;
-    elapsedTimeNotes = 0;
-    lastTimeNotes = millis();
-    melodyArrIndex = 0;
-    elapsedTimeSound = 0;
-    lastTimeSound = millis();
-    soundArrIndex = 0;
-    notes.removeAll(notes);
-    noteTrails.removeAll(noteTrails);
-    sine.stop();
-    points = 0;
-  }
-  stopbutton.render();
-  stopbutton.update();
-  stopbutton.render();
-  startbutton.update();
-  startbutton.render();
-  speed25.render();
-  speed25.update();
-  speed50.render();
-  speed50.update();
-  speed75.render();
-  speed75.update();
-  speed100.render();
-  speed100.update();
-  pointShow.update();
-  pointShow.render();
-  speedShow.update();
-  speedShow.render();
-
-  // These circles are made to help with collision detection of notes.
-  hole1 = createShape(ELLIPSE, 43, 357, 22, 22);
-  hole1.setFill(color(100));
-  hole2 = createShape(ELLIPSE, 43, 416, 22, 22);
-  hole2.setFill(color(100));
-  hole3 = createShape(ELLIPSE, 43, 472, 22, 22);
-  hole3.setFill(color(100));
-  hole4 = createShape(ELLIPSE, 43, 526, 22, 22);
-  hole4.setFill(color(100));
-  hole5 = createShape(ELLIPSE, 43, 580, 22, 22);
-  hole5.setFill(color(100));
-  hole6 = createShape(ELLIPSE, 43, 629, 22, 22);
-  hole6.setFill(color(100));
-  hole7 = createShape(ELLIPSE, 43, 695, 22, 22);
-  hole7.setFill(color(100));
-  shape(hole1);      // Draws the holes
-  shape(hole2);
-  shape(hole3);
-  shape(hole4);
-  shape(hole5);
-  shape(hole6);
-  shape(hole7);
-  
-  pitch(frequency);
-
-  //Functions for spawning bar indicators.
-  //showBarLines();
-  //barTrigger();
-
-  //Functions for spawning notes.
-  //println(points);
-
-  if (startbutton.isClicked()) {
-    start = true;
-    stop = false;
-  }
-
-  if (start == true) {
-    noteTrigger();
-    for (noteTrail n : noteTrails) {
-      n.script();
+    if (speed25.isClicked()) {
+      songSpeed = 0.25;
+    } else if (speed50.isClicked()) {
+      songSpeed = 0.50;
+    } else if (speed75.isClicked()) {
+      songSpeed = 0.75;
+    } else if (speed100.isClicked()) {
+      songSpeed = 1;
     }
-    for (Note n : notes) {
-      n.script();
-      noteCheck();
+
+    if (stopbutton.isClicked()) {
+      stop = true;
+      start = false;
+      elapsedTimeNotes = 0;
+      lastTimeNotes = millis();
+      melodyArrIndex = 0;
+      elapsedTimeSound = 0;
+      lastTimeSound = millis();
+      soundArrIndex = 0;
+      notes.removeAll(notes);
+      noteTrails.removeAll(noteTrails);
+      sine.stop();
+      points = 0;
+    }
+    stopbutton.render();
+    stopbutton.update();
+    stopbutton.render();
+    startbutton.update();
+    startbutton.render();
+    speed25.render();
+    speed25.update();
+    speed50.render();
+    speed50.update();
+    speed75.render();
+    speed75.update();
+    speed100.render();
+    speed100.update();
+    pointShow.update();
+    pointShow.render();
+    speedShow.update();
+    speedShow.render();
+
+    // These circles are made to help with collision detection of notes.
+    hole1 = createShape(ELLIPSE, 43, 357, 22, 22);
+    hole1.setFill(color(100));
+    hole2 = createShape(ELLIPSE, 43, 416, 22, 22);
+    hole2.setFill(color(100));
+    hole3 = createShape(ELLIPSE, 43, 472, 22, 22);
+    hole3.setFill(color(100));
+    hole4 = createShape(ELLIPSE, 43, 526, 22, 22);
+    hole4.setFill(color(100));
+    hole5 = createShape(ELLIPSE, 43, 580, 22, 22);
+    hole5.setFill(color(100));
+    hole6 = createShape(ELLIPSE, 43, 629, 22, 22);
+    hole6.setFill(color(100));
+    hole7 = createShape(ELLIPSE, 43, 695, 22, 22);
+    hole7.setFill(color(100));
+    shape(hole1);      // Draws the holes
+    shape(hole2);
+    shape(hole3);
+    shape(hole4);
+    shape(hole5);
+    shape(hole6);
+    shape(hole7);
+
+    pitch(frequency);
+
+    //Functions for spawning bar indicators.
+    //showBarLines();
+    //barTrigger();
+
+    //Functions for spawning notes.
+    //println(points);
+
+    if (startbutton.isClicked()) {
+      start = true;
+      stop = false;
+    }
+
+    if (start == true) {
+      noteTrigger();
+      for (noteTrail n : noteTrails) {
+        n.script();
+      }
+      for (Note n : notes) {
+        n.script();
+        noteCheck();
+      }
     }
   }
 }
@@ -403,6 +440,10 @@ void noteTrigger() {
       case "":
         //println("Spawning " + melody[melodyArrIndex] + ". Nothing on this quater note. From array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
         melodyArrIndex++;
+        break;
+      case "END":
+        //println("Spawning " + melody[melodyArrIndex] + ". Nothing on this quater note. From array position: " + melodyArrIndex+ "--------TIME: " +elapsedTimeNotes);
+        resultScreen();
         break;
       }
     }
@@ -547,11 +588,11 @@ void noteCheck() {
     receivedNote = myPort.readChar();         // read it and store it in val
     //if (receivedNote != 'N')
     //println(receivedNote);
-  if (pitchPort.available() > 0) {  // If data is available,
-    frequencyString = pitchPort.readString();         // read it and store it in val
-    frequency = int(frequencyString);
-    println("frequency: " + frequency);
-  }
+    if (pitchPort.available() > 0) {  // If data is available,
+      frequencyString = pitchPort.readString();         // read it and store it in val
+      frequency = int(frequencyString);
+      println("frequency: " + frequency);
+    }
 
     if (h1 && h2 && h3 && h4 && h5 && h6 && h7) {
       C = true;
@@ -618,11 +659,11 @@ void pitch(int freq) {
   average = average/10;
   average = average - 350;
   if (average > 125 && average < 680) {
-    ellipse(average,771,15,15);
+    ellipse(average, 771, 15, 15);
   } else if (average < 150) {
-    ellipse(125,771,15,15);
+    ellipse(125, 771, 15, 15);
   } else if (average > 680) {
-    ellipse(680,771,15,15);
+    ellipse(680, 771, 15, 15);
   }
 }
 
@@ -652,100 +693,39 @@ void falsefy() {
   h7 = false;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// Function that triggers every bar (2400 milliseconds at 100% speed).
-// Twinkle Twinkle is at 100 BPM. One bar consists of 4 beats. 1 beat = 60.000/BPM (600ms in our case)
-// The switch goes increments every bar and controls which bar is being spawned. Goes 1-5, 1-5, 1-5 forever.
-
-/*
-void barTrigger() {
- elapsedTime = millis() - lastTime;
- //
- if (elapsedTime >= 2400 * songSpeed) {
- println("Spawning bar " + switchNum + "BAR TIMING: " + elapsedTime);
- lastTime = millis();
- switch(switchNum) {
- case 1:
- line1.resetBar();
- bar1 = true;
- switchNum++;
- break;
- case 2:
- line2.resetBar();
- bar2 = true;
- switchNum++;
- break;
- case 3:
- line3.resetBar();
- bar3 = true;
- switchNum++;
- break;
- case 4:
- line4.resetBar();
- bar4 = true;
- switchNum++;
- break;
- case 5:
- line5.resetBar();
- bar5 = true;
- switchNum++;
- break;
- case 6:
- line6.resetBar();
- bar6 = true;
- switchNum++;
- break;
- case 7:
- line7.resetBar();
- bar7 = true;
- switchNum = 1;
- break;
- }
- }
- }
-/*
- // Function that displays bar objects (vertical line shapes) from the barLine class. Is dependant on the booleans controlled in barTrigger().
- void showBarLines() {
- if (bar1) {
- line1.display();
- line1.move(moveSpeed);
- }
- if (bar2) {
- line2.display();
- line2.move(moveSpeed);
- }
- if (bar3) {
- line3.display();
- line3.move(moveSpeed);
- }
- if (bar4) {
- line4.display();
- line4.move(moveSpeed);
- }
- if (bar5) {
- line5.display();
- line5.move(moveSpeed);
- }
- if (bar6) {
- line6.display();
- line6.move(moveSpeed);
- }
- if (bar7) {
- line7.display();
- line7.move(moveSpeed);
- }
- }
- */
+void resultScreen() {
+  background(resultater);
+  textSize(40);
+  fill(0);
+  if (points >= totalPoints-5) {
+    image(fiveStars, width/2-185, 500);
+  } else if (points >= totalPoints-15) {
+    image(fourStars, width/2-185, 500);
+  } else if (points >= totalPoints-25) {
+    image(threeStars, width/2-185, 500);
+  } else if (points >= totalPoints-35) {
+    image(twoStars, width/2-185, 500);
+  } else if (points <= totalPoints-45) {
+    image(oneStar, width/2-185, 500);
+  }
+  text("Samlet score: " + points + "/" + totalPoints, width/2, 300);
+  textSize(25);
+  text("Korrekte finger placeringer: " + fingeringPoints + "/" + totalPoints, width/2, 400);
+  resetbutton.update();
+  resetbutton.render();
+  if (resetbutton.isClicked()) {
+    stop = false;
+    start = true;
+    elapsedTimeNotes = 0;
+    lastTimeNotes = millis();
+    melodyArrIndex = 0;
+    elapsedTimeSound = 0;
+    lastTimeSound = millis();
+    soundArrIndex = 0;
+    notes.removeAll(notes);
+    noteTrails.removeAll(noteTrails);
+    sine.stop();
+    points = 0;
+    fingeringPoints = 0;
+  }
+}
