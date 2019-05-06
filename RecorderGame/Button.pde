@@ -29,6 +29,10 @@ class Button {
       Pressed = false;
     }
   }
+  
+  void changeColor(int grey) {
+    Colour = color(grey);
+  }
 
   void render() {
     fill(Colour);
