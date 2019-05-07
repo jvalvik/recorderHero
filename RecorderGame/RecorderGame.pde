@@ -16,6 +16,11 @@ Button speed50;
 Button speed75;
 Button speed100;
 Button speedShow;
+Button backButton;
+
+boolean songClicked = false;
+boolean speedClicked = false;
+boolean bothClicked = false;
 
 boolean start = false;
 boolean stop = false;
@@ -27,8 +32,14 @@ int noteTrailRadii = 7;
 
 int lastRecordedTime = 0;
 
-int pointInterval = 100;
+int pointInterval;
 int lastPointTime = 0;
+
+int noteInterval;
+int lastNoteTime = 0;
+
+boolean speedChoice = false;
+boolean songChoice = false;
 
 PImage startScreen;
 PImage img;
@@ -246,16 +257,15 @@ void setup() {
   lastTimeSound = millis();
   soundArrIndex = 0;
 
-  startGame = new Button(width/2-100, 600, 200, 100, "Start Spil!", 255, 255, 255);
-  twinkleButton = new Button(800, 350, 200, 50, "Twinkle", 255, 255, 255);
-  titanicButton = new Button(800, 450, 200, 50, "Titanic", 255, 255, 255);
-  stopbutton = new Button(600, 0, 100, 100, "Stop", 255, 255, 255);
-  startbutton = new Button(700, 0, 100, 100, "Start", 255, 255, 255);
-  resetbutton = new Button(width/2-100, height-200, 200, 100, "Spil igen", 255, 255, 255);
-  speed25 = new Button(50, 350, 200, 50, "25 % speed", 255, 255, 255);
-  speed50 = new Button(50, 450, 200, 50, "50 % speed", 255, 255, 255);
-  speed75 = new Button(50, 550, 200, 50, "75 % speed", 255, 255, 255);
-  speed100 = new Button(50, 650, 200, 50, "Normal speed", 255, 255, 255);
+  backButton = new Button(825, 10, 200, 50, "Tilbage", 255, 255, 255, true);
+  startGame = new Button(width/2-100, height/2+65, 200, 100, "Start Spil!", 255, 255, 255, true);
+  twinkleButton = new Button(800, 350, 200, 50, "Twinkle", 255, 255, 255, true);
+  titanicButton = new Button(800, 450, 200, 50, "Titanic", 255, 255, 255, true);
+  resetbutton = new Button(width/2-100, height-200, 200, 100, "Spil igen", 255, 255, 255, true);
+  speed25 = new Button(50, 350, 200, 50, "25 % speed", 255, 255, 255, true);
+  speed50 = new Button(50, 450, 200, 50, "50 % speed", 255, 255, 255, true);
+  speed75 = new Button(50, 550, 200, 50, "75 % speed", 255, 255, 255, true);
+  speed100 = new Button(50, 650, 200, 50, "Normal speed", 255, 255, 255, true);
 
 
   //String portName = Serial.list()[1]; // assigns bluetooth COM to portName
@@ -285,22 +295,46 @@ void draw() {
     else if (songSpeed == 1)
       speedString = "100%";
 
-    pointShow = new Button(800, 735, 200, 50, "Points: " + str(points), 255, 255, 255);
-    speedShow = new Button(400, 735, 400, 50, "Current Speed: " + speedString, 255, 255, 255);
+    //pointShow = new Button(800, 735, 200, 50, "Points: " + str(points), 255, 255, 255,false);
+    //speedShow = new Button(400, 735, 400, 50, "Current Speed: " + speedString, 255, 255, 255, false);
 
-    if (speed25.isClicked()) {
-      songSpeed = 0.25;
-    } else if (speed50.isClicked()) {
-      songSpeed = 0.50;
-    } else if (speed75.isClicked()) {
-      songSpeed = 0.75;
-    } else if (speed100.isClicked()) {
-      songSpeed = 1;
-    }
+    fill(0);
+    text("Points: " + points, 750, 750);
+    text("Speed: " + speedString, 350, 750);
 
-    if (stopbutton.isClicked()) {
-      stop = true;
+    /*if (speed25.isClicked()) {
+     songSpeed = 0.25;
+     
+     } else if (speed50.isClicked()) {
+     songSpeed = 0.50;
+     } else if (speed75.isClicked()) {
+     songSpeed = 0.75;
+     } else if (speed100.isClicked()) {
+     songSpeed = 1;
+     }
+     
+     if (stopbutton.isClicked()) {
+     stop = true;
+     start = false;
+     elapsedTimeNotes = 0;
+     lastTimeNotes = millis();
+     melodyArrIndex = 0;
+     elapsedTimeSound = 0;
+     lastTimeSound = millis();
+     soundArrIndex = 0;
+     notes.removeAll(notes);
+     noteTrails.removeAll(noteTrails);
+     sine.stop();
+     points = 0;
+     }*/
+
+    if (backButton.isClicked()) {
+      speedClicked = false;
+      songClicked = false;
+      bothClicked = false;
+      stop = false;
       start = false;
+      startScreenBool = true;
       elapsedTimeNotes = 0;
       lastTimeNotes = millis();
       melodyArrIndex = 0;
@@ -311,6 +345,7 @@ void draw() {
       noteTrails.removeAll(noteTrails);
       sine.stop();
       points = 0;
+      fingeringPoints = 0;
     }
     /*stopbutton.render();
      stopbutton.update();
@@ -325,14 +360,11 @@ void draw() {
      speed75.update();
      speed100.render();
      speed100.update();*/
-    pointShow.render();
-    pointShow.update();
-    pointShow.render();
-    speedShow.update();
-    speedShow.render();
+    backButton.render();
+    backButton.update();
+    backButton.render();
 
-
-    // These circles are made to help with collision detection of notes.
+    // Thcuese circles are made to help with collision detection of notes.
     hole1 = createShape(ELLIPSE, 43, 357, 22, 22);
     hole1.setFill(color(100));
     hole2 = createShape(ELLIPSE, 43, 416, 22, 22);
@@ -363,11 +395,6 @@ void draw() {
 
     //Functions for spawning notes.
     //println(points);
-
-    if (startbutton.isClicked()) {
-      start = true;
-      stop = false;
-    }
 
     if (start == true) {
       noteTrigger();
@@ -592,50 +619,60 @@ void noteCheck() {
    receivedNote = myPort.readChar();         // read it and store it in val
    //if (receivedNote != 'N')
    //println(receivedNote);*/
-   if (pitchPort.available() > 0) {  // If data is available,
-   frequencyString = pitchPort.readString();         // read it and store it in val
-   frequency = int(frequencyString);
-   println("frequency: " + frequency);
-   }
+  if (pitchPort.available() > 0) {  // If data is available,
+    frequencyString = pitchPort.readString();         // read it and store it in val
+    frequency = int(frequencyString);
+    println("frequency: " + frequency);
+  }
 
-  
+
   if (h1 && h2 && h3 && h4 && h5 && h6 && h7) {
+    lastNoteTime = millis();
     C = true;
     sine.play(523, amp);
     falsefy();
   } else if (h1 && h2 && h3 && h4 && h5 && h6 && !h7) {
+    lastNoteTime = millis();
     D = true;
     sine.play(587, amp);
     falsefy();
   } else if (h1 && h2 && h3 && h4 && h5 && !h6 && !h7) {
+    lastNoteTime = millis();
     E = true;
     sine.play(659, amp);
     falsefy();
   } else if (h1 && h2 && h3 && h4 && !h5 && h6 && h7) {
+    lastNoteTime = millis();
     F = true;
     sine.play(698, amp);
     falsefy();
   } else if (h1 && h2 && h3 && !h4 && !h5 && !h6 && !h7) {
+    lastNoteTime = millis();
     G = true;
     sine.play(783, amp);
     falsefy();
   } else if (h1 && h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
+    lastNoteTime = millis();
     A = true;
     sine.play(880, amp);
     falsefy();
   } else if (h1 && !h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
+    lastNoteTime = millis();
     B = true;
     sine.play(987, amp);
     falsefy();
   } else {
-    C = false;
-    D = false;
-    E = false;
-    F = false;
-    G = false;
-    A = false;
-    B = false;
-    //sineStop();
+    if (millis() - lastNoteTime > noteInterval) {
+      C = false;
+      D = false;
+      E = false;
+      F = false;
+      G = false;
+      A = false;
+      B = false;
+      //sineStop();
+      lastNoteTime = 0;
+    }
   }
 
   if (C && frequency > 519 && frequency < 549) { //receivedNote == 'C'
@@ -657,17 +694,17 @@ void noteCheck() {
 //}
 
 void pitch(int freq) {
-  
+
   float average = 0;
   int colour = color(255, 0, 0);
   for (int i = 0; i < 10; i++) {
     average = average + freq;
   }
-  
+
   average = average/10;
   average = average*1.5 - 600;
-  
-  if (average > (508*1.5)-600 && average < (538*1.5)-600){
+
+  if (average > (508*1.5)-600 && average < (538*1.5)-600) {
     colour = color(0, 255, 0);
   } else if (average > (572*1.5)-600 && average < (602*1.5)-600) {
     colour = color(0, 255, 0);
@@ -687,10 +724,10 @@ void pitch(int freq) {
     fill(colour);
     ellipse(average, 175, 15, 15);
   } else if (average < 130) {
-    fill(255,0,0);
+    fill(255, 0, 0);
     ellipse(130, 175, 15, 15);
   } else if (average > 940) {
-    fill(255,0,0);
+    fill(255, 0, 0);
     ellipse(940, 175, 15, 15);
   }
 }
@@ -744,6 +781,9 @@ void resultScreen() {
   resetbutton.update();
   resetbutton.render();
   if (resetbutton.isClicked()) {
+    speedClicked = false;
+    songClicked = false;
+    bothClicked = false;
     stop = false;
     start = false;
     startScreenBool = true;
@@ -763,6 +803,7 @@ void resultScreen() {
 
 void startScreen() {
   background(startScreen);
+  fill(0);
   text("Vælg Hastighed:", 150, 300);
   text("Vælg Sang:", 900, 300);
   startGame.update();
@@ -779,7 +820,42 @@ void startScreen() {
   titanicButton.render();
   twinkleButton.update();
   twinkleButton.render();
-  if (startGame.isClicked()) {
+
+  if (startGame.isClicked() && songChoice == true && speedChoice == false) {
+    songClicked = true;
+    speedClicked = false;
+    bothClicked = false;
+  }
+
+  if (startGame.isClicked() && songChoice == false && speedChoice == true) {
+    speedClicked = true;
+    songClicked = false;
+    bothClicked = false;
+  }
+
+  if (startGame.isClicked() && songChoice == false && speedChoice == false) {
+    bothClicked = true;
+    speedClicked = false;
+    songClicked = false;
+  }
+
+  if (songClicked == true) {
+    fill(255, 0, 0);
+    text("Vælg Hastighed", width/2, height/2+200);
+  }
+
+  if (speedClicked == true) {
+    fill(255, 0, 0);
+    text("Vælg Sang", width/2, height/2+200);
+  }
+
+  if (bothClicked == true) {
+    fill(255, 0, 0);
+    text("Vælg Hastighed og Sang", width/2, height/2+200);
+  }
+
+
+  if (startGame.isClicked() && songChoice == true && speedChoice == true) {
     stop = false;
     startScreenBool = false;
     start = true;
@@ -802,36 +878,50 @@ void startScreen() {
     }
   }
   if (speed25.isClicked()) {
+    speedChoice = true;
     songSpeed = 0.25;
+    pointInterval = 300;
+    noteInterval = 300;
     speed25.changeColor(200);
     speed50.changeColor(255);
     speed75.changeColor(255);
     speed100.changeColor(255);
   } else if (speed50.isClicked()) {
+    speedChoice = true;
     songSpeed = 0.50;
+    pointInterval = 300;
+    noteInterval = 300;
     speed25.changeColor(255);
     speed75.changeColor(255);
     speed100.changeColor(255);
     speed50.changeColor(200);
   } else if (speed75.isClicked()) {
+    speedChoice = true;
     songSpeed = 0.75;
     speed25.changeColor(255);
     speed50.changeColor(255);
     speed100.changeColor(255);
     speed75.changeColor(200);
+    pointInterval = 225;
+    noteInterval = 225;
   } else if (speed100.isClicked()) {
+    speedChoice = true;
     songSpeed = 1;
     speed25.changeColor(255);
     speed50.changeColor(255);
     speed75.changeColor(255);
     speed100.changeColor(200);
+    pointInterval = 150;
+    noteInterval = 150;
   }
   if (titanicButton.isClicked()) {
+    songChoice = true;
     melody = melodyTitanic;
     noteTrail = noteTrailTitanic;
     titanicButton.changeColor(200);
     twinkleButton.changeColor(255);
   } else if (twinkleButton.isClicked()) {
+    songChoice = true;
     melody = melodyTwinkle;
     noteTrail = noteTrailTwinkle;
     twinkleButton.changeColor(200);

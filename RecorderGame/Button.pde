@@ -6,14 +6,16 @@ class Button {
   String Text;
   Boolean Pressed = false;
   Boolean Clicked = false;
+  Boolean Stroke = false;
 
-  Button(int x, int y, int w, int h, String t, int r, int g, int b) {
+  Button(int x, int y, int w, int h, String t, int r, int g, int b, boolean s) {
     Pos.x = x;
     Pos.y = y;
     Width = w;
     Height = h;
     Colour = color(r, g, b);
     Text = t;
+    Stroke = s;
   }
 
   void update() {
@@ -29,7 +31,7 @@ class Button {
       Pressed = false;
     }
   }
-  
+
   void changeColor(int grey) {
     Colour = color(grey);
   }
@@ -37,15 +39,15 @@ class Button {
   void render() {
     fill(Colour);
     rect(Pos.x, Pos.y, Width, Height);
-
+    
     fill(0);
     stroke(0);
     textSize(28);
     textAlign(CENTER, CENTER);
     if (Text == "Stop")
-      fill(255,0,0);
+      fill(255, 0, 0);
     else if (Text == "Start")
-      fill(0,255,0);
+      fill(0, 255, 0);
     else
       fill(0);
     text(Text, Pos.x+(Width/2), Pos.y+(Height/2));
