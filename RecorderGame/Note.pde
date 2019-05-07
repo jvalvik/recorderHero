@@ -61,31 +61,31 @@ class Note
   }
 
   void collision() {
-    if (_x > 32 && _x < 54 && _y == 695) {
+    if (_x > 10 && _x < 70 && _y == 695) {
       h7 = true;
       //println("HOLE 7 IS COVERED");
     } 
-    if (_x > 32 && _x < 54 && _y == 629) {
+    if (_x > 10 && _x < 70 && _y == 629) {
       h6 = true;
       //println("HOLE 6 IS COVERED");
     } 
-    if (_x > 32 && _x < 54 && _y == 580) {
+    if (_x > 10 && _x < 70 && _y == 580) {
       h5 = true;
       //println("HOLE 5 IS COVERED");
     } 
-    if (_x > 32 && _x < 54 && _y == 526) {
+    if (_x > 10 && _x < 70 && _y == 526) {
       h4 = true;
       //println("HOLE 4 IS COVERED");
     } 
-    if (_x > 32 && _x < 54 && _y == 472) {
+    if (_x > 10 && _x < 70 && _y == 472) {
       h3 = true;
       //println("HOLE 3 IS COVERED");
     } 
-    if (_x > 32 && _x < 54 && _y == 416) {
+    if (_x > 10 && _x < 70 && _y == 416) {
       h2 = true;
       //println("HOLE 2 IS COVERED");
     }
-    if (_x > 32 && _x < 54 && _y == 357) {
+    if (_x > 10 && _x < 70 && _y == 357) {
       h1 = true;
       //println("HOLE 1 IS COVERED");
     }

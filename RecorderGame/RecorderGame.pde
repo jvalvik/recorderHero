@@ -260,8 +260,8 @@ void setup() {
 
   //String portName = Serial.list()[1]; // assigns bluetooth COM to portName
   //myPort = new Serial(this, portName, 115200);
-  //String portNamePitch = Serial.list()[0];
-  //pitchPort = new Serial(this, portNamePitch, 9600);
+  String portNamePitch = Serial.list()[0];
+  pitchPort = new Serial(this, portNamePitch, 9600);
 }
 
 //-----------------------------------------------------------------------------------------------
@@ -269,7 +269,7 @@ void setup() {
 void draw() {
   if (startScreenBool) {
     startScreen();
-  } else if (melodyArrIndex >= 22) {
+  } else if (melodyArrIndex >= 223) {
     resultScreen();
   } else if (!startScreenBool) {
     //println(melodyArrIndex);
@@ -591,14 +591,14 @@ void noteCheck() {
   /*if (myPort.available() > 0) {  // If data is available,
    receivedNote = myPort.readChar();         // read it and store it in val
    //if (receivedNote != 'N')
-   //println(receivedNote);
+   //println(receivedNote);*/
    if (pitchPort.available() > 0) {  // If data is available,
    frequencyString = pitchPort.readString();         // read it and store it in val
    frequency = int(frequencyString);
    println("frequency: " + frequency);
-   }*/
+   }
 
-
+  
   if (h1 && h2 && h3 && h4 && h5 && h6 && h7) {
     C = true;
     sine.play(523, amp);
@@ -638,19 +638,19 @@ void noteCheck() {
     //sineStop();
   }
 
-  if (C && frequency > 515 && frequency < 550) {
+  if (C && frequency > 519 && frequency < 549) { //receivedNote == 'C'
     score();
-  } else if (D && receivedNote == 'D') {
+  } else if (D && frequency > 567 && frequency < 608) { //receivedNote == 'D'
     score();
-  } else if (E && receivedNote == 'E') {
+  } else if (E && frequency > 639 && frequency < 679) { //receivedNote == 'E'
     score();
-  } else if (F && receivedNote == 'F') {
+  } else if (F && frequency > 685 && frequency < 720) { //receivedNote == 'F'
     score();
-  } else if (G && receivedNote == 'G') {
+  } else if (G && frequency > 760 && frequency < 790) { //receivedNote == 'G'
     score();
-  } else if (A && receivedNote == 'A') {
+  } else if (A && frequency > 839 && frequency < 869) { //receivedNote == 'A'
     score();
-  } else if (B && receivedNote == 'B') {
+  } else if (B && frequency > 935 && frequency < 970) { //receivedNote == 'B'
     score();
   }
 }
@@ -723,6 +723,7 @@ void falsefy() {
 }
 
 void resultScreen() {
+  sine.stop();
   background(resultater);
   textSize(40);
   fill(0);
