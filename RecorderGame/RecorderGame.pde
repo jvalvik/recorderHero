@@ -665,7 +665,7 @@ void pitch(int freq) {
   }
   
   average = average/10;
-  average = 509*1.5 - 600;
+  average = average*1.5 - 600;
   
   if (average > (508*1.5)-600 && average < (538*1.5)-600){
     colour = color(0, 255, 0);
@@ -687,8 +687,10 @@ void pitch(int freq) {
     fill(colour);
     ellipse(average, 175, 15, 15);
   } else if (average < 130) {
+    fill(255,0,0);
     ellipse(130, 175, 15, 15);
   } else if (average > 940) {
+    fill(255,0,0);
     ellipse(940, 175, 15, 15);
   }
 }
