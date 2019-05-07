@@ -18,7 +18,6 @@ Button speed100;
 Button speedShow;
 
 boolean start = false;
-;
 boolean stop = false;
 boolean startScreenBool = true;
 
@@ -273,7 +272,7 @@ void draw() {
   } else if (melodyArrIndex >= 22) {
     resultScreen();
   } else if (!startScreenBool) {
-    println(melodyArrIndex);
+    //println(melodyArrIndex);
     background(img);
     fill(155);
 
@@ -331,21 +330,8 @@ void draw() {
     pointShow.render();
     speedShow.update();
     speedShow.render();
-    
-   /* 
-   int minusX = 600;
-   int minusY = 150;
-   float mX = 1.5;
-   rect((523*mX)-650,175,800,1);
-   rect((523*1.5)-600,150,1,50);
-   rect((587*mX)-minusX,minusY,1,50);
-   rect((659*mX)-minusX,minusY,1,50);
-   rect((698*mX)-minusX,minusY,1,50);
-   rect((783*mX)-minusX,minusY,1,50);
-   rect((880*mX)-minusX,minusY,1,50);
-   rect((987*mX)-minusX,minusY,1,50);
-   */
-   
+
+
     // These circles are made to help with collision detection of notes.
     hole1 = createShape(ELLIPSE, 43, 357, 22, 22);
     hole1.setFill(color(100));
@@ -611,7 +597,7 @@ void noteCheck() {
    frequency = int(frequencyString);
    println("frequency: " + frequency);
    }*/
-   
+
 
   if (h1 && h2 && h3 && h4 && h5 && h6 && h7) {
     C = true;
@@ -671,13 +657,34 @@ void noteCheck() {
 //}
 
 void pitch(int freq) {
+  
   float average = 0;
+  int colour = color(255, 0, 0);
   for (int i = 0; i < 10; i++) {
     average = average + freq;
   }
+  
   average = average/10;
-  average = average*1.5 - 600;
+  average = 509*1.5 - 600;
+  
+  if (average > (508*1.5)-600 && average < (538*1.5)-600){
+    colour = color(0, 255, 0);
+  } else if (average > (572*1.5)-600 && average < (602*1.5)-600) {
+    colour = color(0, 255, 0);
+  } else if (average > (644*1.5)-600 && average < (674*1.5)-600) {
+    colour = color(0, 255, 0);
+  } else if (average > (683*1.5)-600 && average < (713*1.5)-600) {
+    colour = color(0, 255, 0);
+  } else if (average > (768*1.5)-600 && average < (798*1.5)-600) {
+    colour = color(0, 255, 0);
+  } else if (average > (865*1.5)-600 && average < (895*1.5)-600) {
+    colour = color(0, 255, 0);
+  } else if (average > (972*1.5)-600 && average < (1002*1.5)-600) {
+    colour = color(0, 255, 0);
+  }
+
   if (average > 130 && average < 940) {
+    fill(colour);
     ellipse(average, 175, 15, 15);
   } else if (average < 130) {
     ellipse(130, 175, 15, 15);
@@ -685,6 +692,7 @@ void pitch(int freq) {
     ellipse(940, 175, 15, 15);
   }
 }
+
 
 
 void score() {
@@ -785,10 +793,10 @@ void startScreen() {
     fingeringPoints = 0;
     totalPoints = 0;
     for (int i = 0; i<melody.length; i++) {
-    if (melody[i] != "") {
-      totalPoints++;
+      if (melody[i] != "") {
+        totalPoints++;
+      }
     }
-  }
   }
   if (speed25.isClicked()) {
     songSpeed = 0.25;
