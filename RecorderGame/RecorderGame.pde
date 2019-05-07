@@ -221,7 +221,7 @@ void setup() {
   printArray(Serial.list()); // Prints available COMs
   background(255);
   startScreen = loadImage("startScreen.png");
-  img = loadImage("recorder4_0.jpg");
+  img = loadImage("recorder5_0.jpg");
   results = loadImage("results.png");
   resultater = loadImage("resultater.png");
   oneStar = loadImage("oneStar.PNG");
@@ -331,7 +331,21 @@ void draw() {
     pointShow.render();
     speedShow.update();
     speedShow.render();
-
+    
+   /* 
+   int minusX = 600;
+   int minusY = 150;
+   float mX = 1.5;
+   rect((523*mX)-650,175,800,1);
+   rect((523*1.5)-600,150,1,50);
+   rect((587*mX)-minusX,minusY,1,50);
+   rect((659*mX)-minusX,minusY,1,50);
+   rect((698*mX)-minusX,minusY,1,50);
+   rect((783*mX)-minusX,minusY,1,50);
+   rect((880*mX)-minusX,minusY,1,50);
+   rect((987*mX)-minusX,minusY,1,50);
+   */
+   
     // These circles are made to help with collision detection of notes.
     hole1 = createShape(ELLIPSE, 43, 357, 22, 22);
     hole1.setFill(color(100));
@@ -597,6 +611,7 @@ void noteCheck() {
    frequency = int(frequencyString);
    println("frequency: " + frequency);
    }*/
+   
 
   if (h1 && h2 && h3 && h4 && h5 && h6 && h7) {
     C = true;
@@ -656,18 +671,18 @@ void noteCheck() {
 //}
 
 void pitch(int freq) {
-  int average = 0;
+  float average = 0;
   for (int i = 0; i < 10; i++) {
     average = average + freq;
   }
   average = average/10;
-  average = average - 350;
-  if (average > 125 && average < 680) {
-    ellipse(average, 771, 15, 15);
-  } else if (average < 150) {
-    ellipse(125, 771, 15, 15);
-  } else if (average > 680) {
-    ellipse(680, 771, 15, 15);
+  average = average*1.5 - 600;
+  if (average > 130 && average < 940) {
+    ellipse(average, 175, 15, 15);
+  } else if (average < 130) {
+    ellipse(130, 175, 15, 15);
+  } else if (average > 940) {
+    ellipse(940, 175, 15, 15);
   }
 }
 
