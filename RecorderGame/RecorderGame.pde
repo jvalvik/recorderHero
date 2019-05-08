@@ -32,6 +32,9 @@ int noteTrailRadii = 7;
 
 int lastRecordedTime = 0;
 
+int fingerInterval;
+int lastFingerTime = 0;
+
 int pointInterval;
 int lastPointTime = 0;
 
@@ -61,8 +64,11 @@ Serial pitchPort;
 String frequencyString;
 int frequency;
 
-boolean addOnce = false;
+boolean fingerBoolean = false;
+boolean pointBoolean = false;
+
 int points = 0;
+int fingerPoints;
 float totalPoints;
 float pitchPoints;
 float fingeringPoints;
@@ -268,9 +274,9 @@ void setup() {
   speed100 = new Button(50, 650, 200, 50, "Normal speed", 255, 255, 255, true);
 
 
-  //String portName = Serial.list()[1]; // assigns bluetooth COM to portName
-  //myPort = new Serial(this, portName, 115200);
-  String portNamePitch = Serial.list()[0];
+  String portName = Serial.list()[0]; // assigns bluetooth COM to portName
+  myPort = new Serial(this, portName, 115200);
+  String portNamePitch = Serial.list()[1];
   pitchPort = new Serial(this, portNamePitch, 9600);
 }
 
@@ -615,316 +621,342 @@ void C_up() {
 
 void noteCheck() {
 
-  /*if (myPort.available() > 0) {  // If data is available,
-   receivedNote = myPort.readChar();         // read it and store it in val
-   //if (receivedNote != 'N')
-   //println(receivedNote);*/
-  if (pitchPort.available() > 0) {  // If data is available,
-    frequencyString = pitchPort.readString();         // read it and store it in val
-    frequency = int(frequencyString);
-    println("frequency: " + frequency);
+  if (myPort.available() > 0) {  // If data is available,
+    receivedNote = myPort.readChar();         // read it and store it in val
+    if (receivedNote != 'N')
+      println(receivedNote);
   }
-
-
-  if (h1 && h2 && h3 && h4 && h5 && h6 && h7) {
-    lastNoteTime = millis();
-    C = true;
-    sine.play(523, amp);
-    falsefy();
-  } else if (h1 && h2 && h3 && h4 && h5 && h6 && !h7) {
-    lastNoteTime = millis();
-    D = true;
-    sine.play(587, amp);
-    falsefy();
-  } else if (h1 && h2 && h3 && h4 && h5 && !h6 && !h7) {
-    lastNoteTime = millis();
-    E = true;
-    sine.play(659, amp);
-    falsefy();
-  } else if (h1 && h2 && h3 && h4 && !h5 && h6 && h7) {
-    lastNoteTime = millis();
-    F = true;
-    sine.play(698, amp);
-    falsefy();
-  } else if (h1 && h2 && h3 && !h4 && !h5 && !h6 && !h7) {
-    lastNoteTime = millis();
-    G = true;
-    sine.play(783, amp);
-    falsefy();
-  } else if (h1 && h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
-    lastNoteTime = millis();
-    A = true;
-    sine.play(880, amp);
-    falsefy();
-  } else if (h1 && !h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
-    lastNoteTime = millis();
-    B = true;
-    sine.play(987, amp);
-    falsefy();
-  } else {
-    if (millis() - lastNoteTime > noteInterval) {
-      C = false;
-      D = false;
-      E = false;
-      F = false;
-      G = false;
-      A = false;
-      B = false;
-      //sineStop();
-      lastNoteTime = 0;
+    if (pitchPort.available() > 0) {  // If data is available,
+      frequencyString = pitchPort.readString();         // read it and store it in val
+      frequency = int(frequencyString);
+      println("frequency: " + frequency);
     }
-  }
-
-  if (C && frequency > 519 && frequency < 549) { //receivedNote == 'C'
-    score();
-  } else if (D && frequency > 567 && frequency < 608) { //receivedNote == 'D'
-    score();
-  } else if (E && frequency > 639 && frequency < 679) { //receivedNote == 'E'
-    score();
-  } else if (F && frequency > 685 && frequency < 720) { //receivedNote == 'F'
-    score();
-  } else if (G && frequency > 760 && frequency < 790) { //receivedNote == 'G'
-    score();
-  } else if (A && frequency > 839 && frequency < 869) { //receivedNote == 'A'
-    score();
-  } else if (B && frequency > 935 && frequency < 970) { //receivedNote == 'B'
-    score();
-  }
-}
-//}
-
-void pitch(int freq) {
-
-  float average = 0;
-  int colour = color(255, 0, 0);
-  for (int i = 0; i < 10; i++) {
-    average = average + freq;
-  }
-
-  average = average/10;
-  average = average*1.5 - 600;
-
-  if (average > (508*1.5)-600 && average < (538*1.5)-600) {
-    colour = color(0, 255, 0);
-  } else if (average > (572*1.5)-600 && average < (602*1.5)-600) {
-    colour = color(0, 255, 0);
-  } else if (average > (644*1.5)-600 && average < (674*1.5)-600) {
-    colour = color(0, 255, 0);
-  } else if (average > (683*1.5)-600 && average < (713*1.5)-600) {
-    colour = color(0, 255, 0);
-  } else if (average > (768*1.5)-600 && average < (798*1.5)-600) {
-    colour = color(0, 255, 0);
-  } else if (average > (865*1.5)-600 && average < (895*1.5)-600) {
-    colour = color(0, 255, 0);
-  } else if (average > (972*1.5)-600 && average < (1002*1.5)-600) {
-    colour = color(0, 255, 0);
-  }
-
-  if (average > 130 && average < 940) {
-    fill(colour);
-    ellipse(average, 175, 15, 15);
-  } else if (average < 130) {
-    fill(255, 0, 0);
-    ellipse(130, 175, 15, 15);
-  } else if (average > 940) {
-    fill(255, 0, 0);
-    ellipse(940, 175, 15, 15);
-  }
-}
 
 
-
-void score() {
-  if (millis()-lastPointTime>pointInterval) {
-    points++;
-    addOnce = false;
-  }
-  lastPointTime = millis();
-}
-
-void sineStop() {
-  if (millis()-lastRecordedTime>elapsedTimeNotes) {
-    sine.stop();
-    lastRecordedTime = millis();
-  }
-}
-
-void falsefy() {
-  h1 = false;
-  h2 = false;
-  h3 = false;
-  h4 = false;
-  h5 = false;
-  h6 = false;
-  h7 = false;
-}
-
-void resultScreen() {
-  sine.stop();
-  background(resultater);
-  textSize(40);
-  fill(0);
-  if (points >= totalPoints*0.95) { // 95% Correct = 5 stars
-    image(fiveStars, width/2-185, 500);
-  } else if (points >= totalPoints*0.75) { // 75% Correct = 4 stars
-    image(fourStars, width/2-185, 500);
-  } else if (points >= totalPoints*0.50) { // 50% Correct = 3 stars
-    image(threeStars, width/2-185, 500);
-  } else if (points >= totalPoints*0.25) { // 25% Correct = 2 stars
-    image(twoStars, width/2-185, 500);
-  } else if (points <= totalPoints*0.10) { // 10% Correct = 1 stars
-    image(oneStar, width/2-185, 500);
-  }
-  text("Samlet score: " + points + "/" + int(totalPoints), width/2, 300);
-  textSize(25);
-  text("Korrekte finger placeringer: " + int(fingeringPoints) + "/" + int(totalPoints), width/2, 400);
-  resetbutton.update();
-  resetbutton.render();
-  if (resetbutton.isClicked()) {
-    speedClicked = false;
-    songClicked = false;
-    bothClicked = false;
-    stop = false;
-    start = false;
-    startScreenBool = true;
-    elapsedTimeNotes = 0;
-    lastTimeNotes = millis();
-    melodyArrIndex = 0;
-    elapsedTimeSound = 0;
-    lastTimeSound = millis();
-    soundArrIndex = 0;
-    notes.removeAll(notes);
-    noteTrails.removeAll(noteTrails);
-    sine.stop();
-    points = 0;
-    fingeringPoints = 0;
-  }
-}
-
-void startScreen() {
-  background(startScreen);
-  fill(0);
-  text("Vælg Hastighed:", 150, 300);
-  text("Vælg Sang:", 900, 300);
-  startGame.update();
-  startGame.render();
-  speed25.update();
-  speed25.render();
-  speed50.render();
-  speed50.update();
-  speed75.render();
-  speed75.update();
-  speed100.render();
-  speed100.update();
-  titanicButton.update();
-  titanicButton.render();
-  twinkleButton.update();
-  twinkleButton.render();
-
-  if (startGame.isClicked() && songChoice == true && speedChoice == false) {
-    songClicked = true;
-    speedClicked = false;
-    bothClicked = false;
-  }
-
-  if (startGame.isClicked() && songChoice == false && speedChoice == true) {
-    speedClicked = true;
-    songClicked = false;
-    bothClicked = false;
-  }
-
-  if (startGame.isClicked() && songChoice == false && speedChoice == false) {
-    bothClicked = true;
-    speedClicked = false;
-    songClicked = false;
-  }
-
-  if (songClicked == true) {
-    fill(255, 0, 0);
-    text("Vælg Hastighed", width/2, height/2+200);
-  }
-
-  if (speedClicked == true) {
-    fill(255, 0, 0);
-    text("Vælg Sang", width/2, height/2+200);
-  }
-
-  if (bothClicked == true) {
-    fill(255, 0, 0);
-    text("Vælg Hastighed og Sang", width/2, height/2+200);
-  }
-
-
-  if (startGame.isClicked() && songChoice == true && speedChoice == true) {
-    stop = false;
-    startScreenBool = false;
-    start = true;
-    elapsedTimeNotes = 0;
-    lastTimeNotes = millis();
-    melodyArrIndex = 0;
-    elapsedTimeSound = 0;
-    lastTimeSound = millis();
-    soundArrIndex = 0;
-    notes.removeAll(notes);
-    noteTrails.removeAll(noteTrails);
-    sine.stop();
-    points = 0;
-    fingeringPoints = 0;
-    totalPoints = 0;
-    for (int i = 0; i<melody.length; i++) {
-      if (melody[i] != "") {
-        totalPoints++;
+    if (h1 && h2 && h3 && h4 && h5 && h6 && h7) {
+      lastNoteTime = millis();
+      C = true;
+      sine.play(523, amp);
+      falsefy();
+    } else if (h1 && h2 && h3 && h4 && h5 && h6 && !h7) {
+      lastNoteTime = millis();
+      D = true;
+      sine.play(587, amp);
+      falsefy();
+    } else if (h1 && h2 && h3 && h4 && h5 && !h6 && !h7) {
+      lastNoteTime = millis();
+      E = true;
+      sine.play(659, amp);
+      falsefy();
+    } else if (h1 && h2 && h3 && h4 && !h5 && h6 && h7) {
+      lastNoteTime = millis();
+      F = true;
+      sine.play(698, amp);
+      falsefy();
+    } else if (h1 && h2 && h3 && !h4 && !h5 && !h6 && !h7) {
+      lastNoteTime = millis();
+      G = true;
+      sine.play(783, amp);
+      falsefy();
+    } else if (h1 && h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
+      lastNoteTime = millis();
+      A = true;
+      sine.play(880, amp);
+      falsefy();
+    } else if (h1 && !h2 && !h3 && !h4 && !h5 && !h6 && !h7) {
+      lastNoteTime = millis();
+      B = true;
+      sine.play(987, amp);
+      falsefy();
+    } else {
+      if (millis() - lastNoteTime > noteInterval) {
+        C = false;
+        D = false;
+        E = false;
+        F = false;
+        G = false;
+        A = false;
+        B = false;
+        //sineStop();
+        lastNoteTime = 0;
       }
     }
+
+    if (C && frequency > 519 && frequency < 549 && receivedNote == 'C') { //receivedNote == 'C'
+      score();
+    } else if (D && frequency > 567 && frequency < 608 && receivedNote == 'D') { //receivedNote == 'D'
+      score();
+    } else if (E && frequency > 639 && frequency < 679 && receivedNote == 'E') { //receivedNote == 'E'
+      score();
+    } else if (F && frequency > 685 && frequency < 720 && receivedNote == 'F') { //receivedNote == 'F'
+      score();
+    } else if (G && frequency > 760 && frequency < 790 && receivedNote == 'G') { //receivedNote == 'G'
+      score();
+    } else if (A && frequency > 839 && frequency < 869 && receivedNote == 'A') { //receivedNote == 'A'
+      score();
+    } else if (B && frequency > 935 && frequency < 970 && receivedNote == 'B') { //receivedNote == 'B'
+      score();
+    }
+
+    if (C && receivedNote == 'C') { //receivedNote == 'C'
+      fingerScore();
+    } else if (D && receivedNote == 'D') { //receivedNote == 'D'
+      fingerScore();
+    } else if (E && receivedNote == 'E') { //receivedNote == 'E'
+      fingerScore();
+    } else if (F && receivedNote == 'F') { //receivedNote == 'F'
+      fingerScore();
+    } else if (G && receivedNote == 'G') { //receivedNote == 'G'
+      fingerScore();
+    } else if (A && receivedNote == 'A') { //receivedNote == 'A'
+      fingerScore();
+    } else if (B && receivedNote == 'B') { //receivedNote == 'B'
+      fingerScore();
+    }
   }
-  if (speed25.isClicked()) {
-    speedChoice = true;
-    songSpeed = 0.25;
-    pointInterval = 300;
-    noteInterval = 300;
-    speed25.changeColor(200);
-    speed50.changeColor(255);
-    speed75.changeColor(255);
-    speed100.changeColor(255);
-  } else if (speed50.isClicked()) {
-    speedChoice = true;
-    songSpeed = 0.50;
-    pointInterval = 300;
-    noteInterval = 300;
-    speed25.changeColor(255);
-    speed75.changeColor(255);
-    speed100.changeColor(255);
-    speed50.changeColor(200);
-  } else if (speed75.isClicked()) {
-    speedChoice = true;
-    songSpeed = 0.75;
-    speed25.changeColor(255);
-    speed50.changeColor(255);
-    speed100.changeColor(255);
-    speed75.changeColor(200);
-    pointInterval = 225;
-    noteInterval = 225;
-  } else if (speed100.isClicked()) {
-    speedChoice = true;
-    songSpeed = 1;
-    speed25.changeColor(255);
-    speed50.changeColor(255);
-    speed75.changeColor(255);
-    speed100.changeColor(200);
-    pointInterval = 150;
-    noteInterval = 150;
+
+  void pitch(int freq) {
+
+    float average = 0;
+    int colour = color(255, 0, 0);
+    for (int i = 0; i < 10; i++) {
+      average = average + freq;
+    }
+
+    average = average/10;
+    average = average*1.5 - 600;
+
+    if (average > (508*1.5)-600 && average < (538*1.5)-600) {
+      colour = color(0, 255, 0);
+    } else if (average > (572*1.5)-600 && average < (602*1.5)-600) {
+      colour = color(0, 255, 0);
+    } else if (average > (644*1.5)-600 && average < (674*1.5)-600) {
+      colour = color(0, 255, 0);
+    } else if (average > (683*1.5)-600 && average < (713*1.5)-600) {
+      colour = color(0, 255, 0);
+    } else if (average > (768*1.5)-600 && average < (798*1.5)-600) {
+      colour = color(0, 255, 0);
+    } else if (average > (865*1.5)-600 && average < (895*1.5)-600) {
+      colour = color(0, 255, 0);
+    } else if (average > (972*1.5)-600 && average < (1002*1.5)-600) {
+      colour = color(0, 255, 0);
+    }
+
+    if (average > 130 && average < 940) {
+      fill(colour);
+      ellipse(average, 175, 15, 15);
+    } else if (average < 130) {
+      fill(255, 0, 0);
+      ellipse(130, 175, 15, 15);
+    } else if (average > 940) {
+      fill(255, 0, 0);
+      ellipse(940, 175, 15, 15);
+    }
   }
-  if (titanicButton.isClicked()) {
-    songChoice = true;
-    melody = melodyTitanic;
-    noteTrail = noteTrailTitanic;
-    titanicButton.changeColor(200);
-    twinkleButton.changeColor(255);
-  } else if (twinkleButton.isClicked()) {
-    songChoice = true;
-    melody = melodyTwinkle;
-    noteTrail = noteTrailTwinkle;
-    twinkleButton.changeColor(200);
-    titanicButton.changeColor(255);
+
+  void fingerScore() {
+    if (millis()-lastFingerTime>fingerInterval) {
+      fingerPoints++;
+      fingerBoolean = false;
+    }
+    lastFingerTime = millis();
   }
-}
+
+  void score() {
+    if (millis()-lastPointTime>pointInterval) {
+      points++;
+      pointBoolean = false;
+    }
+    lastPointTime = millis();
+  }
+
+  void sineStop() {
+    if (millis()-lastRecordedTime>elapsedTimeNotes) {
+      sine.stop();
+      lastRecordedTime = millis();
+    }
+  }
+
+  void falsefy() {
+    h1 = false;
+    h2 = false;
+    h3 = false;
+    h4 = false;
+    h5 = false;
+    h6 = false;
+    h7 = false;
+  }
+
+  void resultScreen() {
+    sine.stop();
+    background(resultater);
+    textSize(40);
+    fill(0);
+    if (points >= totalPoints*0.95) { // 95% Correct = 5 stars
+      image(fiveStars, width/2-185, 500);
+    } else if (points >= totalPoints*0.75) { // 75% Correct = 4 stars
+      image(fourStars, width/2-185, 500);
+    } else if (points >= totalPoints*0.50) { // 50% Correct = 3 stars
+      image(threeStars, width/2-185, 500);
+    } else if (points >= totalPoints*0.25) { // 25% Correct = 2 stars
+      image(twoStars, width/2-185, 500);
+    } else if (points <= totalPoints*0.10) { // 10% Correct = 1 stars
+      image(oneStar, width/2-185, 500);
+    }
+    text("Samlet score: " + points + "/" + int(totalPoints), width/2, 300);
+    textSize(25);
+    text("Korrekte finger placeringer: " + int(fingerPoints) + "/" + int(totalPoints), width/2, 400);
+    resetbutton.update();
+    resetbutton.render();
+    if (resetbutton.isClicked()) {
+      speedClicked = false;
+      songClicked = false;
+      bothClicked = false;
+      stop = false;
+      start = false;
+      startScreenBool = true;
+      elapsedTimeNotes = 0;
+      lastTimeNotes = millis();
+      melodyArrIndex = 0;
+      elapsedTimeSound = 0;
+      lastTimeSound = millis();
+      soundArrIndex = 0;
+      notes.removeAll(notes);
+      noteTrails.removeAll(noteTrails);
+      sine.stop();
+      points = 0;
+      fingerPoints = 0;
+    }
+  }
+
+  void startScreen() {
+    background(startScreen);
+    fill(0);
+    text("Vælg Hastighed:", 150, 300);
+    text("Vælg Sang:", 900, 300);
+    startGame.update();
+    startGame.render();
+    speed25.update();
+    speed25.render();
+    speed50.render();
+    speed50.update();
+    speed75.render();
+    speed75.update();
+    speed100.render();
+    speed100.update();
+    titanicButton.update();
+    titanicButton.render();
+    twinkleButton.update();
+    twinkleButton.render();
+
+    if (startGame.isClicked() && songChoice == true && speedChoice == false) {
+      songClicked = true;
+      speedClicked = false;
+      bothClicked = false;
+    }
+
+    if (startGame.isClicked() && songChoice == false && speedChoice == true) {
+      speedClicked = true;
+      songClicked = false;
+      bothClicked = false;
+    }
+
+    if (startGame.isClicked() && songChoice == false && speedChoice == false) {
+      bothClicked = true;
+      speedClicked = false;
+      songClicked = false;
+    }
+
+    if (songClicked == true) {
+      fill(255, 0, 0);
+      text("Vælg Hastighed", width/2, height/2+200);
+    }
+
+    if (speedClicked == true) {
+      fill(255, 0, 0);
+      text("Vælg Sang", width/2, height/2+200);
+    }
+
+    if (bothClicked == true) {
+      fill(255, 0, 0);
+      text("Vælg Hastighed og Sang", width/2, height/2+200);
+    }
+
+
+    if (startGame.isClicked() && songChoice == true && speedChoice == true) {
+      stop = false;
+      startScreenBool = false;
+      start = true;
+      elapsedTimeNotes = 0;
+      lastTimeNotes = millis();
+      melodyArrIndex = 0;
+      elapsedTimeSound = 0;
+      lastTimeSound = millis();
+      soundArrIndex = 0;
+      notes.removeAll(notes);
+      noteTrails.removeAll(noteTrails);
+      sine.stop();
+      points = 0;
+      fingerPoints = 0;
+      totalPoints = 0;
+      for (int i = 0; i<melody.length; i++) {
+        if (melody[i] != "") {
+          totalPoints++;
+        }
+      }
+    }
+    if (speed25.isClicked()) {
+      speedChoice = true;
+      songSpeed = 0.25;
+      fingerInterval = 300;
+      pointInterval = 300;
+      noteInterval = 300;
+      speed25.changeColor(200);
+      speed50.changeColor(255);
+      speed75.changeColor(255);
+      speed100.changeColor(255);
+    } else if (speed50.isClicked()) {
+      speedChoice = true;
+      songSpeed = 0.50;
+      fingerInterval = 300;
+      pointInterval = 300;
+      noteInterval = 300;
+      speed25.changeColor(255);
+      speed75.changeColor(255);
+      speed100.changeColor(255);
+      speed50.changeColor(200);
+    } else if (speed75.isClicked()) {
+      speedChoice = true;
+      songSpeed = 0.75;
+      speed25.changeColor(255);
+      speed50.changeColor(255);
+      speed100.changeColor(255);
+      speed75.changeColor(200);
+      fingerInterval = 225;
+      pointInterval = 225;
+      noteInterval = 225;
+    } else if (speed100.isClicked()) {
+      speedChoice = true;
+      songSpeed = 1;
+      speed25.changeColor(255);
+      speed50.changeColor(255);
+      speed75.changeColor(255);
+      speed100.changeColor(200);
+      fingerInterval = 150;
+      pointInterval = 150;
+      noteInterval = 150;
+    }
+    if (titanicButton.isClicked()) {
+      songChoice = true;
+      melody = melodyTitanic;
+      noteTrail = noteTrailTitanic;
+      titanicButton.changeColor(200);
+      twinkleButton.changeColor(255);
+    } else if (twinkleButton.isClicked()) {
+      songChoice = true;
+      melody = melodyTwinkle;
+      noteTrail = noteTrailTwinkle;
+      twinkleButton.changeColor(200);
+      titanicButton.changeColor(255);
+    }
+  }
