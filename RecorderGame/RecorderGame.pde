@@ -273,8 +273,7 @@ void setup() {
   speed75 = new Button(50, 550, 200, 50, "75 % speed", 255, 255, 255, true);
   speed100 = new Button(50, 650, 200, 50, "Normal speed", 255, 255, 255, true);
 
-
-  String portName = Serial.list()[0]; // assigns bluetooth COM to portName
+  String portName = Serial.list()[2]; // assigns bluetooth COM to portName
   myPort = new Serial(this, portName, 115200);
   String portNamePitch = Serial.list()[1];
   pitchPort = new Serial(this, portNamePitch, 9600);
@@ -623,8 +622,8 @@ void noteCheck() {
 
   if (myPort.available() > 0) {  // If data is available,
     receivedNote = myPort.readChar();         // read it and store it in val
-    if (receivedNote != 'N')
-      println(receivedNote);
+    //if (receivedNote != 'N')
+      //println(receivedNote);
   }
     if (pitchPort.available() > 0) {  // If data is available,
       frequencyString = pitchPort.readString();         // read it and store it in val
@@ -800,7 +799,7 @@ void noteCheck() {
       image(threeStars, width/2-185, 500);
     } else if (points >= totalPoints*0.25) { // 25% Correct = 2 stars
       image(twoStars, width/2-185, 500);
-    } else if (points <= totalPoints*0.10) { // 10% Correct = 1 stars
+    } else if (points <= totalPoints*0) { // 10% Correct = 1 stars
       image(oneStar, width/2-185, 500);
     }
     text("Samlet score: " + points + "/" + int(totalPoints), width/2, 300);
@@ -848,6 +847,18 @@ void noteCheck() {
     titanicButton.render();
     twinkleButton.update();
     twinkleButton.render();
+    stroke(255,0,0);
+    strokeWeight(4);
+    line(50,350,250,400);
+    line(50,400,250,350);
+    line(50,550,250,600);
+    line(50,600,250,550);
+    line(50,650,250,700);
+    line(50,700,250,650);
+    line(800,450,1000,500);
+    line(800,500,1000,450);
+    strokeWeight(1);
+    stroke(0);
 
     if (startGame.isClicked() && songChoice == true && speedChoice == false) {
       songClicked = true;
@@ -905,7 +916,7 @@ void noteCheck() {
         }
       }
     }
-    if (speed25.isClicked()) {
+   /* if (speed25.isClicked()) {
       speedChoice = true;
       songSpeed = 0.25;
       fingerInterval = 300;
@@ -914,8 +925,8 @@ void noteCheck() {
       speed25.changeColor(200);
       speed50.changeColor(255);
       speed75.changeColor(255);
-      speed100.changeColor(255);
-    } else if (speed50.isClicked()) {
+      speed100.changeColor(255);*/
+    if (speed50.isClicked()) {
       speedChoice = true;
       songSpeed = 0.50;
       fingerInterval = 300;
@@ -925,7 +936,7 @@ void noteCheck() {
       speed75.changeColor(255);
       speed100.changeColor(255);
       speed50.changeColor(200);
-    } else if (speed75.isClicked()) {
+    }/* else if (speed75.isClicked()) {
       speedChoice = true;
       songSpeed = 0.75;
       speed25.changeColor(255);
@@ -952,7 +963,7 @@ void noteCheck() {
       noteTrail = noteTrailTitanic;
       titanicButton.changeColor(200);
       twinkleButton.changeColor(255);
-    } else if (twinkleButton.isClicked()) {
+    } */if (twinkleButton.isClicked()) {
       songChoice = true;
       melody = melodyTwinkle;
       noteTrail = noteTrailTwinkle;
