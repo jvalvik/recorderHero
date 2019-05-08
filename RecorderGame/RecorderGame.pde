@@ -725,19 +725,19 @@ void noteCheck() {
     average = average/10;
     average = average*1.5 - 600;
 
-    if (average > (508*1.5)-600 && average < (538*1.5)-600) {
+    if (average > (519*1.5)-600 && average < (549*1.5)-600) {
       colour = color(0, 255, 0);
-    } else if (average > (572*1.5)-600 && average < (602*1.5)-600) {
+    } else if (average > (567*1.5)-600 && average < (608*1.5)-600) {
       colour = color(0, 255, 0);
-    } else if (average > (644*1.5)-600 && average < (674*1.5)-600) {
+    } else if (average > (639*1.5)-600 && average < (679*1.5)-600) {
       colour = color(0, 255, 0);
-    } else if (average > (683*1.5)-600 && average < (713*1.5)-600) {
+    } else if (average > (685*1.5)-600 && average < (720*1.5)-600) {
       colour = color(0, 255, 0);
-    } else if (average > (768*1.5)-600 && average < (798*1.5)-600) {
+    } else if (average > (760*1.5)-600 && average < (790*1.5)-600) {
       colour = color(0, 255, 0);
-    } else if (average > (865*1.5)-600 && average < (895*1.5)-600) {
+    } else if (average > (839*1.5)-600 && average < (869*1.5)-600) {
       colour = color(0, 255, 0);
-    } else if (average > (972*1.5)-600 && average < (1002*1.5)-600) {
+    } else if (average > (935*1.5)-600 && average < (970*1.5)-600) {
       colour = color(0, 255, 0);
     }
 
